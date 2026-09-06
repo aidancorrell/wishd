@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% set active = 'costs' %}
+{% block title %}Spend · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Govern</span>{% endblock %}
+{% block heading %}Spend{% endblock %}
+{% block note %}
+<p class="page-note">
+  Cluster spend divided across the applications that ran, by core-seconds, then
+  up the run tree to the model that caused it. Idle time is reported separately
+  rather than spread across models — it is real spend that no model caused, and
+  burying it would hide the cheapest optimisation most teams have.
+</p>
+{% endblock %}
+
+{% block content %}
+
+{% if by_job %}
+<table class="runs">
+  <thead>
+    <tr><th>Job</th><th>Integration</th><th class="num">Cost</th>
+        <th class="num">Runs</th><th>Last run</th></tr>
+  </thead>
+  <tbody>
+    {% for row in by_job %}
+    <tr>
+      <td class="job">{{ row.job_name }}</td>
+      <td><span class="intg">{{ row.integration or '—' }}</span></td>
+      <td class="num">${{ '%.2f'|format(row.cost_usd|float) }}</td>
+      <td class="num">{{ row.runs }}</td>
+      <td class="when">
+        {{ row.last_run_at.strftime('%b %d %H:%M') if row.last_run_at else '—' }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>Nothing priced yet.</p>
+  <pre>wishd import-cost cur.csv --tag-key team</pre>
+</div>
+{% endif %}
+
+{% if clusters %}
+<section>
+  <h2 class="section-title">Clusters</h2>
+  <table class="runs">
+    <thead>
+      <tr><th>Cluster</th><th class="num">Billed</th><th class="num">Attributed</th>
+          <th class="num">Idle</th><th class="num">Apps</th></tr>
+    </thead>
+    <tbody>
+      {% for c in clusters %}
+      <tr>
+        <td class="job">{{ c.name or c.cluster_id }}
+          <span class="ns">{{ c.platform }} · {{ c.cluster_id }}</span></td>
+        <td class="num">${{ '%.2f'|format(c.billed_cost_usd|float) }}</td>
+        <td class="num">${{ '%.2f'|format(c.attributed_cost_usd|float) }}</td>
+        {# Idle is called out, not hidden: a cluster left running overnight is
+           usually the largest single line anyone can act on. #}
+        <td class="num {% if c.idle_cost_usd|float > 0 %}bad-num{% endif %}">
+          ${{ '%.2f'|format(c.idle_cost_usd|float) }}
+        </td>
+        <td class="num">{{ c.applications }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if unattributed and unattributed.line_items %}
+<p class="page-note">
+  <strong>${{ '%.2f'|format(unattributed.cost_usd|float) }}</strong> across
+  {{ unattributed.line_items }} line item(s) matched no cluster. Kept rather than
+  dropped, so these totals reconcile with your AWS console — check the tag key
+  and whether the cluster sync has run.
+</p>
+{% endif %}
+{% endblock %}

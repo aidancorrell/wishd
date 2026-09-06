@@ -1,0 +1,49 @@
+.venv/
+.dev/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+.DS_Store
+
+# Dev-stack runtime artifacts. The compose stack mounts ./dev into containers,
+# so Spark's Derby metastore, dbt's target/ and assorted logs land here.
+dev/dbt/target/
+dev/dbt/logs/
+dev/dbt/dbt_packages/
+dev/spark/metastore_db/
+dev/spark/spark-warehouse/
+dev/spark/derby.log
+dev/**/*.log
+dev/dbt/.user.yml
+
+# Thrift validation stack runtime state. A stale Derby metastore silently
+# changes the dataset namespaces the stack exists to observe.
+dev/thrift/warehouse/
+dev/thrift/eventlog/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local artifact store. The default DATASPINE_ARTIFACT_DIR, so anyone who runs
+# the gateway without configuring one writes dbt manifests here.
+.dataspine/
+
+# Real dbt Cloud captures. They carry a live account's dbt Cloud account,
+# project, job and environment ids, so only the sanitized stubs beside them are
+# committed; `tests/fixtures/sanitize_dbt_cloud.py` regenerates those from here.
+tests/fixtures/local/
+
+# Local credentials, tools, and generated captures
+.env.*
+!.env.example
+.claude/
+.codex/
+.wishd/
+dev/spark/eventlog/
+*.pem
+*.key

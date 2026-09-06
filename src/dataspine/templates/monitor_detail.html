@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% set active = 'monitors' %}
+{% block title %}{{ monitor.name }} · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Govern · check</span>{% endblock %}
+{% block heading %}{{ monitor.name }}{% endblock %}
+{% block note %}
+<p class="page-note">
+  <span class="intg">{{ monitor.kind }}</span>
+  watching <strong>{{ monitor.target }}</strong>
+  · {{ monitor.schedule }}
+  {% if not monitor.enabled %} · <span class="ns">disabled</span>{% endif %}
+</p>
+{% if latest %}<p class="page-note">{{ latest.message }}</p>{% endif %}
+{% endblock %}
+{% block head_aside %}
+  <span class="status {{ monitor.last_status or 'none' }}">{{ monitor.last_status or '—' }}</span>
+{% endblock %}
+
+{% block content %}
+
+{# What the target actually matched. A dataset target matches on the final name
+   segment, because one table arrives under several identities -- dbt's
+   `analytics.fct_orders` and Spark's `/warehouse/fct_orders` are the same table.
+   That match is loose by necessity, so it is shown rather than trusted. #}
+<section>
+  <h2 class="section-title">Resolves to</h2>
+  {% if resolution %}
+  <ul class="plain-list">
+    {% for r in resolution %}<li class="mono">{{ r }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Nothing matched — this monitor cannot observe anything yet.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="section-title">{% if monitor.mode == 'anomaly' %}Learned band{% else %}Thresholds{% endif %}</h2>
+  {% if monitor.mode == 'anomaly' %}
+    {% if latest and latest.threshold and latest.threshold.expected is not none %}
+    <ul class="plain-list">
+      <li class="mono">expected: {{ '%.1f'|format(latest.threshold.expected) }}</li>
+      <li class="mono">band: ±{{ '%.1f'|format(latest.threshold.band or 0) }}</li>
+      {% if latest.context %}
+      <li class="mono">seasonality: {{ latest.context.get('seasonality', '—') }}</li>
+      <li class="mono">training points: {{ latest.context.get('training_points', '—') }}</li>
+      {% endif %}
+    </ul>
+    {% else %}
+    <p class="muted">Not armed yet — still collecting a training window.</p>
+    {% endif %}
+    {% if monitor.config %}
+    <ul class="plain-list">
+      {% for key, value in monitor.config.items() %}<li class="mono">{{ key }}: {{ value }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  {% elif monitor.config %}
+  <ul class="plain-list">
+    {% for key, value in monitor.config.items() %}<li class="mono">{{ key }}: {{ value }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">None — this check is deterministic.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="section-title">History</h2>
+  {% if points %}
+  {# A bar per observation, oldest on the left. Inline-styled widths: no build
+     step and no JavaScript (ADR-002), and a sparkline is not worth either. #}
+  <div class="sparkbars">
+    {% for p in points %}
+    <div class="sparkbar" title="{{ p.observed_at.strftime('%b %d %H:%M') }} · {{ p.value }}">
+      <div class="sparkbar-fill" style="height: {{ p.pct }}%"></div>
+    </div>
+    {% endfor %}
+  </div>
+  <table class="runs">
+    <thead>
+      <tr>
+        <th>Observed</th><th class="num">Value</th><th>Run</th>
+        {# Feedback teaches a learned baseline. A threshold monitor has none, so
+           offering the buttons there would be offering a control that does
+           nothing. #}
+        {% if monitor.mode == 'anomaly' %}<th>Baseline</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in points|reverse %}
+      <tr>
+        <td class="when">{{ p.observed_at.strftime('%b %d %H:%M') }}</td>
+        <td class="num">{{ '%.1f'|format(p.value) if p.value is not none else '—' }}</td>
+        <td class="rid">
+          {% if p.subject %}<a href="/runs/{{ p.subject }}">{{ p.subject[:8] }}</a>{% endif %}
+        </td>
+        {% if monitor.mode == 'anomaly' %}
+        <td>
+          <form method="post" action="/monitors/{{ monitor.name }}/feedback" class="feedback">
+            <input type="hidden" name="subject" value="{{ p.subject }}">
+            {% if p.feedback %}
+              <span class="label {{ p.feedback }}">{{ p.feedback }}</span>
+              <button type="submit" name="feedback" value="" class="link">clear</button>
+            {% else %}
+              <button type="submit" name="feedback" value="expected"
+                      title="Real and fine. Keeps this point in the baseline.">expected</button>
+              <button type="submit" name="feedback" value="anomaly"
+                      title="Confirmed bad. Removes it, so it cannot widen the band."
+                      >anomaly</button>
+            {% endif %}
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">
+    No observations yet. Nothing this monitor watches has produced a successful
+    run we can measure.
+  </p>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="section-title">Evaluations</h2>
+  {% if results %}
+  <table class="runs">
+    <thead>
+      <tr><th>When</th><th>Status</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td class="when">{{ r.evaluated_at.strftime('%b %d %H:%M') }}</td>
+        <td>
+          <span class="status {{ r.status }}">{{ r.status }}</span>
+          {% if r.transitioned %}<span class="ns">changed</span>{% endif %}
+        </td>
+        <td class="muted">{{ r.message }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Never evaluated. Run <code>wishd check</code>.</p>
+  {% endif %}
+</section>
+{% endblock %}

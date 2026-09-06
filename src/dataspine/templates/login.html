@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set chrome = false %}
+{% block title %}Sign in · wish:d{% endblock %}
+{% block page_head %}{% endblock %}
+{% block content %}
+<div class="login">
+  <p class="brand">wish:d</p>
+  {% if error %}<p class="login-error">That token was not accepted.</p>{% endif %}
+  <form method="post" action="/login">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label for="token">API token</label>
+    <input id="token" type="password" name="token" autofocus autocomplete="current-password">
+    <button type="submit">Sign in</button>
+  </form>
+  <p class="login-note">
+    Tokens come from <code>DATASPINE_API_TOKENS</code> on the server.
+  </p>
+</div>
+{% endblock %}

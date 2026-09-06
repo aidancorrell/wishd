@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% set active = 'catalog' %}
+{% block title %}Datasets · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Data</span>{% endblock %}
+{% block heading %}Datasets{% endblock %}
+{% block note %}
+<p class="page-note">
+  A view over what is already stored, so nothing here can drift out of sync with
+  the pipelines it describes. Ownership and descriptions come from
+  <code>datasets:</code> in your monitor YAML.
+</p>
+{% endblock %}
+
+{% block content %}
+
+<form class="filters" method="get" action="/catalog">
+  <input type="search" name="q" value="{{ query }}"
+         placeholder="table, column, owner, tag, description">
+  <button type="submit">Search</button>
+  {% if query %}<a class="clear" href="/catalog">clear</a>{% endif %}
+</form>
+
+{% if entries %}
+<table class="runs">
+  <thead>
+    <tr>
+      <th>Table</th><th>Format</th><th>Owner</th>
+      <th class="num">Upstream</th><th class="num">Downstream</th>
+      <th class="num">Monitors</th><th>Last written</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td class="job">
+        <a href="/catalog/{{ e.id }}">{{ e.name }}</a>
+        {% if e.description %}<span class="ns">{{ e.description }}</span>{% endif %}
+      </td>
+      <td>
+        {% if e.table_format %}
+          <span class="fmt" title="reported by the producer's storage facet">
+            {{ icon(e.table_format) }}{{ e.table_format|capitalize }}
+          </span>
+        {% else %}<span class="muted">—</span>{% endif %}
+      </td>
+      <td class="muted">{{ e.owner or '—' }}</td>
+      <td class="num">{{ e.upstream_count }}</td>
+      <td class="num">{{ e.downstream_count }}</td>
+      {# Unmonitored is the most useful thing a catalog surfaces on day one, so
+         it is called out rather than left as a zero to notice. #}
+      <td class="num">
+        {% if e.monitor_count %}{{ e.monitor_count }}
+        {% else %}<span class="ns">none</span>{% endif %}
+      </td>
+      <td class="when">
+        {{ e.last_written_at.strftime('%b %d %H:%M') if e.last_written_at else '—' }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>{% if query %}Nothing matched “{{ query }}”.{% else %}No tables yet.{% endif %}</p>
+  {% if not query %}<pre>wishd seed && wishd resolve</pre>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

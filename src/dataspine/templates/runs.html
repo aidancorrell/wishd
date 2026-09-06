@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, state_dot %}
+{% from "_run_row.html" import run_row %}
+{% set active = 'runs' %}
+{% block title %}Runs · wish:d{% endblock %}
+
+{#
+  The run list, organised the way people actually ask about it: "what is running
+  now, what is waiting, and what happened last night."
+
+  Three deliberate departures from the flat table this replaces:
+
+  **The unit is a pipeline execution, not a run.** A flat list of 50 rows reads
+  well only if you already know which of them belong together -- which is the
+  thing the correlator exists to tell you. Each card is one execution with its
+  tree inside it.
+
+  **Hierarchy is drawn, not implied.** Indentation plus a connector rail, so the
+  DAG -> task -> model -> SQL chain is visible without reading a single name.
+
+  **Tool and infrastructure are separate columns.** "DBT" says who emitted the
+  event; it does not say whether the SQL ran on EMR, Snowflake or a Postgres
+  container -- and on this project's thesis, that difference is the whole point.
+  See platforms.py.
+#}
+
+
+{% macro pipeline_card(pipeline, lane) %}
+  {% set root = pipeline.root %}
+  <article class="pipe {% if pipeline.has_failure %}pipe-bad{% elif lane == 'running' %}pipe-live{% endif %}">
+    <header class="pipe-head">
+      <div class="pipe-title">
+        {{ state_dot(root.state) }}
+        <a href="/runs/{{ root.run_id }}">{{ root.job_name }}</a>
+        <span class="pipe-ns">{{ root.job_namespace }}</span>
+      </div>
+      <div class="pipe-meta">
+        {% if pipeline.has_failure %}<span class="tag tag-bad">failed</span>{% endif %}
+        {% if lane == 'running' %}<span class="tag tag-live">live</span>{% endif %}
+        <span class="pipe-count">{{ pipeline.run_count }} run{{ '' if pipeline.run_count == 1 else 's' }}</span>
+        <span class="pipe-when">
+          {{ root.started_at.strftime('%b %d %H:%M') if root.started_at else 'not started' }}
+        </span>
+        <span class="pipe-dur">{{ root.duration_ms|duration }}</span>
+      </div>
+    </header>
+
+    {% if pipeline.runs %}
+      {# Open by default while live or broken: those are the two cases where the
+         detail is the reason you opened the page at all. #}
+      <details class="pipe-body" {% if lane == 'running' or pipeline.has_failure %}open{% endif %}>
+        <summary>{{ pipeline.runs|length }} step{{ '' if pipeline.runs|length == 1 else 's' }}</summary>
+        <div class="rr-list">
+          {% for run in pipeline.runs %}{{ run_row(run) }}{% endfor %}
+        </div>
+      </details>
+    {% else %}
+      <p class="pipe-alone">No child runs — nothing else reported into this tree.</p>
+    {% endif %}
+  </article>
+{% endmacro %}
+
+{% block eyebrow %}<span class="eyebrow">Operate</span>{% endblock %}
+{% block heading %}Runs{% endblock %}
+{% block note %}
+<p class="page-note">
+  One card per pipeline execution, not per run. Hierarchy is drawn rather than
+  implied, and the tool that emitted the event is kept separate from the
+  infrastructure the work ran on.
+</p>
+{% endblock %}
+
+{# Ingest health rides in the header rather than in a band of stat tiles below
+   it. Three of these four numbers are context; the fourth -- unstitched -- is
+   the single best health metric in the system, and it is the only one that ever
+   needs to interrupt somebody. #}
+{% block head_aside %}
+<p class="now-counts">
+  <span><span class="n">{{ health.runs }}</span><span class="l">runs</span></span>
+  <span><span class="n">{{ health.jobs }}</span><span class="l">jobs</span></span>
+  <span><span class="n">{{ health.datasets }}</span><span class="l">datasets</span></span>
+  {# Always emitted, dimmed at zero rather than dropped. Unstitched is the single
+     best health metric in the system, and a number that vanishes when it is fine
+     is one nobody learns to look for. #}
+  <span class="{% if health.unstitched_runs %}is-crit{% else %}is-zero{% endif %}"
+        title="Runs naming a parent no producer ever sent — the run tree is incomplete. Usually a missing OPENLINEAGE_PARENT_* handoff.">
+    <span class="n">{{ health.unstitched_runs }}</span><span class="l">unstitched</span>
+  </span>
+</p>
+{% endblock %}
+
+{% block content %}
+
+{% if health.unstitched_runs %}
+<p class="caveat">
+  {{ health.unstitched_runs }} run(s) name a parent no producer ever sent, so
+  those run trees are incomplete. Usually a missing
+  <code>OPENLINEAGE_PARENT_*</code> handoff.
+</p>
+{% endif %}
+
+<form class="filters" method="get" action="/">
+  <input type="search" name="job" value="{{ filters.job }}" placeholder="Pipeline name contains…">
+  <select name="integration">
+    <option value="">All integrations</option>
+    {% for opt in ['AIRFLOW', 'DBT', 'SPARK'] %}
+      <option value="{{ opt }}" {% if filters.integration == opt %}selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+  <select name="state">
+    <option value="">Any state</option>
+    {% for opt in ['RUNNING', 'COMPLETED', 'FAILED', 'ABORTED'] %}
+      <option value="{{ opt }}" {% if filters.state == opt %}selected{% endif %}>{{ opt }}</option>
+    {% endfor %}
+  </select>
+  <select name="since">
+    <option value="">Any time</option>
+    {% for key, label in [('1h','Last hour'), ('24h','Last 24h'), ('7d','Last 7 days'), ('30d','Last 30 days')] %}
+      <option value="{{ key }}" {% if filters.since == key %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Filter</button>
+</form>
+
+{% if pipeline_count %}
+
+  <section class="lane lane-running">
+    <h2 class="lane-head"><span class="lane-pip live"></span>
+      <span class="section-title">Running now</span>
+      <span class="lane-n">{{ lanes.running|length }}</span></h2>
+    {% if lanes.running %}
+      {% for pipeline in lanes.running %}{{ pipeline_card(pipeline, 'running') }}{% endfor %}
+    {% else %}
+      <p class="lane-empty">Nothing in flight.</p>
+    {% endif %}
+  </section>
+
+  {# Queued is honest about being narrow. OpenLineage has no "about to run"
+     event, so a pipeline appears here only once some producer has named it --
+     typically as a parent whose own START has not landed yet. Work the Airflow
+     scheduler is sitting on is invisible to us until it starts, and closing that
+     gap needs the scheduler's own telemetry (D2). Saying so on the page beats
+     letting someone conclude their queue is empty. #}
+  <section class="lane lane-queued">
+    <h2 class="lane-head"><span class="lane-pip queued"></span>
+      <span class="section-title">Queued</span>
+      <span class="lane-n">{{ lanes.queued|length }}</span></h2>
+    {% if lanes.queued %}
+      {% for pipeline in lanes.queued %}{{ pipeline_card(pipeline, 'queued') }}{% endfor %}
+    {% else %}
+      <p class="lane-empty">
+        Nothing announced but unstarted.
+        <span class="lane-caveat">
+          Producers emit when work <em>starts</em>, so anything still sitting in
+          the scheduler's queue cannot appear here yet.
+        </span>
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="lane lane-finished">
+    <h2 class="lane-head"><span class="lane-pip done"></span>
+      <span class="section-title">Finished</span>
+      <span class="lane-n">{{ lanes.finished|length }}</span></h2>
+    {% for pipeline in lanes.finished %}{{ pipeline_card(pipeline, 'finished') }}{% endfor %}
+  </section>
+
+  <nav class="pager">
+    {% set q = 'job=' ~ filters.job ~ '&integration=' ~ filters.integration ~ '&state=' ~ filters.state ~ '&since=' ~ filters.since %}
+    {% if page > 1 %}<a href="?page={{ page - 1 }}&{{ q }}">← Newer</a>{% endif %}
+    <span>Page {{ page }}</span>
+    {% if has_next %}<a href="?page={{ page + 1 }}&{{ q }}">Older →</a>{% endif %}
+  </nav>
+
+{% else %}
+<div class="empty">
+  <p>No pipelines match.</p>
+  <p>If nothing has arrived yet, generate a simulated EMR pipeline:</p>
+  <pre><code>wishd seed --url http://localhost:8080</code></pre>
+</div>
+{% endif %}
+
+{% endblock %}

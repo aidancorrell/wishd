@@ -1,0 +1,17 @@
+# Minimal dbt project for validating the OpenLineage dbt integration.
+# Postgres rather than Spark: the adapter changes dataset namespaces, but the
+# job-naming conventions and the parent-run handoff we are testing here are
+# adapter-independent, and Postgres is already in the stack.
+name: analytics
+version: "1.0.0"
+config-version: 2
+profile: analytics
+models:
+  analytics:
+    +materialized: table
+    marts:
+      +schema: marts
+      # `iceberg` when the Spark/Iceberg stack is up, ignored entirely by the
+      # Postgres target -- dbt-postgres has no file_format concept, so one
+      # project serves both validations without a second copy to keep in sync.
+      +file_format: "{{ env_var('DBT_FILE_FORMAT', 'parquet') }}"

@@ -1,0 +1,963 @@
+[
+ {
+  "eventTime": "2026-08-07T23:28:42.894400Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "airflow": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/JobFacet",
+     "taskGroups": {},
+     "taskTree": {},
+     "tasks": {
+      "dbt_run_marts": {
+       "downstream_group_edges": {},
+       "downstream_task_edges": {},
+       "downstream_task_ids": [
+        "publish_marts"
+       ],
+       "emits_ol_events": true,
+       "is_setup": false,
+       "is_teardown": false,
+       "operator": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+       "ui_color": "#ffefeb",
+       "ui_fgcolor": "#000",
+       "ui_label": "dbt_run_marts"
+      },
+      "publish_marts": {
+       "downstream_group_edges": {},
+       "downstream_task_edges": {},
+       "downstream_task_ids": [],
+       "emits_ol_events": true,
+       "is_setup": false,
+       "is_teardown": false,
+       "operator": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+       "ui_color": "#ffefeb",
+       "ui_fgcolor": "#000",
+       "ui_label": "publish_marts"
+      }
+     }
+    },
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "DAG",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflowDagRun": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_bundle_name": "dags-folder",
+      "dag_id": "analytics_daily",
+      "dag_version_id": "019fde84-b39c-7b22-98e2-cfc1da85e08e",
+      "dag_version_number": 1,
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00",
+      "triggered_by": "cli"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-07T23:28:42.981124Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "documentation": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/DocumentationJobFacet.json#/$defs/DocumentationJobFacet",
+     "contentType": "text/markdown",
+     "description": "Stands in for the dbt-core invocation.\n\n        The env vars below are exactly the handoff the roadmap flags as the most\n        fragile link in the chain: whatever dbt runs next must inherit this\n        task's run id as its OpenLineage parent, or the pipeline splits into two\n        unrelated trees.\n        "
+    },
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "TASK",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily.dbt_run_marts",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflow": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_id": "analytics_daily",
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00"
+     },
+     "task": {
+      "depends_on_past": false,
+      "downstream_task_ids": "['publish_marts']",
+      "executor_config": {},
+      "ignore_first_depends_on_past": false,
+      "inlets": "[]",
+      "mapped": false,
+      "multiple_outputs": false,
+      "operator_class": "_PythonDecoratedOperator",
+      "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+      "operator_provider_version": "1.2.0",
+      "outlets": "[]",
+      "owner": "airflow",
+      "priority_weight": 1,
+      "queue": "default",
+      "retries": 0,
+      "retry_exponential_backoff": false,
+      "task_id": "dbt_run_marts",
+      "trigger_rule": "all_success",
+      "upstream_task_ids": "[]",
+      "wait_for_downstream": false,
+      "wait_for_past_depends_before_skipping": false
+     },
+     "taskInstance": {
+      "dag_bundle_name": "dags-folder",
+      "try_number": 1
+     },
+     "taskUuid": "019fde8e-b3dd-7590-ae8b-a293478e3a16"
+    },
+    "parent": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "facets": {},
+      "name": "analytics_daily",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "facets": {},
+       "name": "analytics_daily",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "facets": {},
+       "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+      }
+     },
+     "run": {
+      "facets": {},
+      "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    },
+    "unknownSourceAttribute": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "unknownItems": [
+      {
+       "name": "_PythonDecoratedOperator",
+       "properties": {
+        "depends_on_past": false,
+        "downstream_task_ids": "['publish_marts']",
+        "executor_config": {},
+        "ignore_first_depends_on_past": false,
+        "inlets": "[]",
+        "mapped": false,
+        "multiple_outputs": false,
+        "operator_class": "_PythonDecoratedOperator",
+        "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+        "operator_provider_version": "1.2.0",
+        "outlets": "[]",
+        "owner": "airflow",
+        "priority_weight": 1,
+        "queue": "default",
+        "retries": 0,
+        "retry_exponential_backoff": false,
+        "task_id": "dbt_run_marts",
+        "trigger_rule": "all_success",
+        "upstream_task_ids": "[]",
+        "wait_for_downstream": false,
+        "wait_for_past_depends_before_skipping": false
+       },
+       "type": "operator"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-7590-ae8b-a293478e3a16"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-07T23:28:44.144608Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "documentation": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/DocumentationJobFacet.json#/$defs/DocumentationJobFacet",
+     "contentType": "text/markdown",
+     "description": "Stands in for the dbt-core invocation.\n\n        The env vars below are exactly the handoff the roadmap flags as the most\n        fragile link in the chain: whatever dbt runs next must inherit this\n        task's run id as its OpenLineage parent, or the pipeline splits into two\n        unrelated trees.\n        "
+    },
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "TASK",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily.dbt_run_marts",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflow": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_id": "analytics_daily",
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00"
+     },
+     "task": {
+      "depends_on_past": false,
+      "downstream_task_ids": "['publish_marts']",
+      "executor_config": {},
+      "ignore_first_depends_on_past": false,
+      "inlets": "[]",
+      "mapped": false,
+      "multiple_outputs": false,
+      "operator_class": "_PythonDecoratedOperator",
+      "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+      "operator_provider_version": "1.2.0",
+      "outlets": "[]",
+      "owner": "airflow",
+      "priority_weight": 1,
+      "queue": "default",
+      "retries": 0,
+      "retry_exponential_backoff": false,
+      "task_id": "dbt_run_marts",
+      "trigger_rule": "all_success",
+      "upstream_task_ids": "[]",
+      "wait_for_downstream": false,
+      "wait_for_past_depends_before_skipping": false
+     },
+     "taskInstance": {
+      "dag_bundle_name": "dags-folder",
+      "try_number": 1
+     },
+     "taskUuid": "019fde8e-b3dd-7590-ae8b-a293478e3a16"
+    },
+    "parent": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "facets": {},
+      "name": "analytics_daily",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "facets": {},
+       "name": "analytics_daily",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "facets": {},
+       "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+      }
+     },
+     "run": {
+      "facets": {},
+      "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    },
+    "unknownSourceAttribute": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "unknownItems": [
+      {
+       "name": "_PythonDecoratedOperator",
+       "properties": {
+        "depends_on_past": false,
+        "downstream_task_ids": "['publish_marts']",
+        "executor_config": {},
+        "ignore_first_depends_on_past": false,
+        "inlets": "[]",
+        "mapped": false,
+        "multiple_outputs": false,
+        "operator_class": "_PythonDecoratedOperator",
+        "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+        "operator_provider_version": "1.2.0",
+        "outlets": "[]",
+        "owner": "airflow",
+        "priority_weight": 1,
+        "queue": "default",
+        "retries": 0,
+        "retry_exponential_backoff": false,
+        "task_id": "dbt_run_marts",
+        "trigger_rule": "all_success",
+        "upstream_task_ids": "[]",
+        "wait_for_downstream": false,
+        "wait_for_past_depends_before_skipping": false
+       },
+       "type": "operator"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-7590-ae8b-a293478e3a16"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-07T23:28:44.912753Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "TASK",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily.publish_marts",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflow": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_id": "analytics_daily",
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00"
+     },
+     "task": {
+      "depends_on_past": false,
+      "downstream_task_ids": "[]",
+      "executor_config": {},
+      "ignore_first_depends_on_past": false,
+      "inlets": "[]",
+      "mapped": false,
+      "multiple_outputs": false,
+      "operator_class": "_PythonDecoratedOperator",
+      "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+      "operator_provider_version": "1.2.0",
+      "outlets": "[]",
+      "owner": "airflow",
+      "priority_weight": 1,
+      "queue": "default",
+      "retries": 0,
+      "retry_exponential_backoff": false,
+      "task_id": "publish_marts",
+      "trigger_rule": "all_success",
+      "upstream_task_ids": "['dbt_run_marts']",
+      "wait_for_downstream": false,
+      "wait_for_past_depends_before_skipping": false
+     },
+     "taskInstance": {
+      "dag_bundle_name": "dags-folder",
+      "try_number": 1
+     },
+     "taskUuid": "019fde8e-b3dd-796a-8165-6329acfe0f72"
+    },
+    "parent": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "facets": {},
+      "name": "analytics_daily",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "facets": {},
+       "name": "analytics_daily",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "facets": {},
+       "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+      }
+     },
+     "run": {
+      "facets": {},
+      "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    },
+    "unknownSourceAttribute": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "unknownItems": [
+      {
+       "name": "_PythonDecoratedOperator",
+       "properties": {
+        "depends_on_past": false,
+        "downstream_task_ids": "[]",
+        "executor_config": {},
+        "ignore_first_depends_on_past": false,
+        "inlets": "[]",
+        "mapped": false,
+        "multiple_outputs": false,
+        "operator_class": "_PythonDecoratedOperator",
+        "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+        "operator_provider_version": "1.2.0",
+        "outlets": "[]",
+        "owner": "airflow",
+        "priority_weight": 1,
+        "queue": "default",
+        "retries": 0,
+        "retry_exponential_backoff": false,
+        "task_id": "publish_marts",
+        "trigger_rule": "all_success",
+        "upstream_task_ids": "['dbt_run_marts']",
+        "wait_for_downstream": false,
+        "wait_for_past_depends_before_skipping": false
+       },
+       "type": "operator"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-796a-8165-6329acfe0f72"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-07T23:28:45.206348Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "TASK",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily.publish_marts",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflow": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_id": "analytics_daily",
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00"
+     },
+     "task": {
+      "depends_on_past": false,
+      "downstream_task_ids": "[]",
+      "executor_config": {},
+      "ignore_first_depends_on_past": false,
+      "inlets": "[]",
+      "mapped": false,
+      "multiple_outputs": false,
+      "operator_class": "_PythonDecoratedOperator",
+      "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+      "operator_provider_version": "1.2.0",
+      "outlets": "[]",
+      "owner": "airflow",
+      "priority_weight": 1,
+      "queue": "default",
+      "retries": 0,
+      "retry_exponential_backoff": false,
+      "task_id": "publish_marts",
+      "trigger_rule": "all_success",
+      "upstream_task_ids": "['dbt_run_marts']",
+      "wait_for_downstream": false,
+      "wait_for_past_depends_before_skipping": false
+     },
+     "taskInstance": {
+      "dag_bundle_name": "dags-folder",
+      "try_number": 1
+     },
+     "taskUuid": "019fde8e-b3dd-796a-8165-6329acfe0f72"
+    },
+    "parent": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "facets": {},
+      "name": "analytics_daily",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "facets": {},
+       "name": "analytics_daily",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "facets": {},
+       "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+      }
+     },
+     "run": {
+      "facets": {},
+      "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    },
+    "unknownSourceAttribute": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "unknownItems": [
+      {
+       "name": "_PythonDecoratedOperator",
+       "properties": {
+        "depends_on_past": false,
+        "downstream_task_ids": "[]",
+        "executor_config": {},
+        "ignore_first_depends_on_past": false,
+        "inlets": "[]",
+        "mapped": false,
+        "multiple_outputs": false,
+        "operator_class": "_PythonDecoratedOperator",
+        "operator_class_path": "airflow.providers.standard.decorators.python._PythonDecoratedOperator",
+        "operator_provider_version": "1.2.0",
+        "outlets": "[]",
+        "owner": "airflow",
+        "priority_weight": 1,
+        "queue": "default",
+        "retries": 0,
+        "retry_exponential_backoff": false,
+        "task_id": "publish_marts",
+        "trigger_rule": "all_success",
+        "upstream_task_ids": "['dbt_run_marts']",
+        "wait_for_downstream": false,
+        "wait_for_past_depends_before_skipping": false
+       },
+       "type": "operator"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-796a-8165-6329acfe0f72"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-07T23:28:45.858496Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "AIRFLOW",
+     "jobType": "DAG",
+     "processingType": "BATCH"
+    },
+    "ownership": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/OwnershipJobFacet.json#/$defs/OwnershipJobFacet",
+     "owners": [
+      {
+       "name": "airflow"
+      }
+     ]
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsJobFacet.json#/$defs/TagsJobFacet",
+     "tags": [
+      {
+       "key": "dataspine",
+       "source": "AIRFLOW",
+       "value": "dataspine"
+      },
+      {
+       "key": "validation",
+       "source": "AIRFLOW",
+       "value": "validation"
+      }
+     ]
+    }
+   },
+   "name": "analytics_daily",
+   "namespace": "prod-airflow"
+  },
+  "outputs": [],
+  "producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+  "run": {
+   "facets": {
+    "airflowDagRun": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dag": {
+      "dag_id": "analytics_daily",
+      "fileloc": "/opt/airflow/dags/analytics_daily.py",
+      "owner": "airflow",
+      "owner_links": {},
+      "start_date": "2026-08-01T00:00:00+00:00",
+      "tags": "['validation', 'dataspine']",
+      "timetable": {},
+      "timetable_summary": "None"
+     },
+     "dagRun": {
+      "clear_number": 0,
+      "conf": {},
+      "dag_bundle_name": "dags-folder",
+      "dag_id": "analytics_daily",
+      "dag_version_id": "019fde84-b39c-7b22-98e2-cfc1da85e08e",
+      "dag_version_number": 1,
+      "duration": 2.964096,
+      "end_date": "2026-08-07T23:28:45.858496+00:00",
+      "run_after": "2026-08-07T23:28:41.949748+00:00",
+      "run_id": "manual__2026-08-07T23:28:41.949748+00:00_eAf6WiPh",
+      "run_type": "manual",
+      "start_date": "2026-08-07T23:28:42.894400+00:00",
+      "triggered_by": "cli"
+     }
+    },
+    "airflowState": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "dagRunState": "success",
+     "tasksDuration": {
+      "dbt_run_marts": 3.1630000000000003,
+      "publish_marts": 1.293
+     },
+     "tasksState": {
+      "dbt_run_marts": "success",
+      "publish_marts": "success"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "Airflow",
+     "openlineageAdapterVersion": "2.19.0",
+     "version": "3.0.2"
+    },
+    "tags": {
+     "_producer": "https://github.com/apache/airflow/tree/providers-openlineage/2.19.0",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/TagsRunFacet.json#/$defs/TagsRunFacet",
+     "tags": [
+      {
+       "key": "openlineage_client_version",
+       "source": "OPENLINEAGE_CLIENT",
+       "value": "1.52.0"
+      }
+     ]
+    }
+   },
+   "runId": "019fde8e-b3dd-7d2d-904a-0ff1f8703494"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ }
+]

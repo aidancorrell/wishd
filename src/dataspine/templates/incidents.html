@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% set active = 'incidents' %}
+{% block title %}Incidents · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Operate</span>{% endblock %}
+{% block heading %}Incidents{% endblock %}
+{% block note %}
+<p class="page-note">
+  Breaches that lineage says are one event. The cause is the breach with nothing
+  broken above it; everything else is its blast radius, recorded here and
+  deliberately <em>not</em> delivered as its own alert.
+</p>
+{% endblock %}
+
+{% block content %}
+
+{% if incidents %}
+{% for incident in incidents %}
+<section class="incident">
+  {# The affected table names the incident, not the monitor that noticed it:
+     people talk about "fct_orders is broken", not about which check fired. #}
+  <header class="incident-head">
+    <h2>{{ incident.cause_entity_name or incident.cause_monitor }}</h2>
+    <span class="when">
+      opened {{ incident.opened_at.strftime('%b %d %H:%M') if incident.opened_at }}
+    </span>
+  </header>
+
+  {# The cause sits on the wash. Everything below it is consequence, and the
+     visual break is the argument the page is making. #}
+  <div class="incident-cause">
+    <span class="status-tag">cause</span>
+    <a href="/monitors/{{ incident.cause_monitor }}">{{ incident.cause_monitor }}</a>
+    <span class="incident-msg">{{ incident.message }}</span>
+  </div>
+
+  <div class="incident-blast">
+    {% if incident.consequences %}
+    <p class="incident-note">
+      {{ incident.consequences | length }} downstream check{{ '' if incident.consequences|length == 1 else 's' }}
+      also breaching. Neither was delivered as its own alert.
+    </p>
+    <table class="runs">
+      <thead><tr><th>Check</th><th>Table</th><th class="num">Hops</th></tr></thead>
+      <tbody>
+        {% for c in incident.consequences %}
+        <tr>
+          <td><a href="/monitors/{{ c.monitor }}">{{ c.monitor }}</a></td>
+          <td class="muted">{{ c.entity_name or '—' }}</td>
+          <td class="num">{{ c.distance }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="incident-note">Nothing downstream is affected.</p>
+    {% endif %}
+  </div>
+</section>
+{% endfor %}
+{% else %}
+<div class="empty"><p>No open incidents.</p></div>
+{% endif %}
+{% endblock %}

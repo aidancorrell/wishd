@@ -1,0 +1,102 @@
+# Example monitors.
+#
+# Apply with:  dataspine apply monitors/
+#
+# The targets below match the pipeline `dataspine seed` generates, so this file
+# works as a demo out of the box:
+#
+#     dataspine seed && dataspine apply monitors/
+#
+# Put this file in your own repo, next to the dbt project it protects, so that
+# changing a threshold goes through review like any other change. `dataspine
+# apply` is idempotent and safe to run from CI on every merge.
+#
+# Every monitor below reads only what the gateway already collects from Airflow,
+# dbt and Spark. None of them needs warehouse credentials, a connection string,
+# or a scan.
+
+monitors:
+  # ---------------------------------------------------------------- datasets
+
+  # Freshness. Targets match on the final segment of the dataset name, because
+  # one physical table arrives under several identities: dbt reports
+  # `analytics.fct_orders`, the Spark job underneath it reports
+  # `/warehouse/fct_orders`. Run `dataspine monitors --resolve` to see exactly
+  # what a target matched.
+  - name: fct_orders_freshness
+    kind: freshness
+    dataset: fct_orders
+    max_age_minutes: 90
+
+  # Volume. Row counts come from Spark's outputStatistics facet -- dbt does not
+  # send one, so a dbt-only stack will report insufficient_data here rather than
+  # a misleading pass.
+  - name: fct_orders_volume
+    kind: row_count
+    dataset: fct_orders
+    min: 1000
+    schedule: daily
+
+  # Schema drift. Deterministic: no threshold, no training window. Removed and
+  # retyped columns breach; added columns are reported and do not, because a
+  # monitor that pages on every additive migration gets muted within a fortnight.
+  - name: fct_orders_schema
+    kind: schema_drift
+    dataset: fct_orders
+
+  # ------------------------------------------------------------------- jobs
+
+  - name: nightly_dbt_duration
+    kind: job_duration
+    job: dbt-run-analytics
+    max_seconds: 1800
+
+  # A rate over a stated window, not "did the last run fail". One failure means
+  # very different things for a five-minute job and a nightly one.
+  - name: nightly_dbt_reliability
+    kind: job_failure_rate
+    job: dbt-run-analytics
+    max_rate: 0.2
+    window_hours: 24
+
+  # Time spent eligible but not started -- pool saturation and scheduler lag,
+  # separated from how long the work itself took. Derived from Airflow facets we
+  # already store; see ADR/D2 for why this is not an OTel collector.
+  - name: nightly_queue_delay
+    kind: queue_delay
+    job: analytics_daily
+    max_seconds: 18000
+
+  # Learned baseline instead of a stated number. Arms once there is a week of
+  # history — which `dataspine apply` usually backfills out of the run archive.
+  - name: fct_orders_volume_anomaly
+    kind: row_count
+    dataset: fct_orders
+    mode: anomaly
+
+  - name: nightly_spill
+    kind: spark_spill
+    job: dbt_spark_analytics
+    max_gb: 4
+
+  - name: nightly_retries
+    kind: job_retries
+    job: analytics_daily
+    max: 2
+
+  # Any SQL returning one number. Runs read-only and under a statement timeout:
+  # a monitor is a question, not a migration.
+  - name: unstitched_runs
+    kind: custom_sql
+    query: select count(*) from unstitched_runs
+    max: 0
+
+  # Column statistics come from `dataspine profile`, which is opt-in and budgeted
+  # because it is the only thing here that reads table data rather than metadata.
+  # Without a profile this reports insufficient_data rather than a false pass.
+  - name: fct_orders_customer_nulls
+    kind: column_stats
+    dataset: fct_orders
+    column: customer_id
+    metric: null_rate
+    max: 0.01

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% set active = 'catalog' %}
+{% block title %}{{ graph.focus.name }} lineage · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Data · lineage</span>{% endblock %}
+{% block heading %}{{ graph.focus.name }}{% endblock %}
+{% block note %}
+<p class="page-note">
+  Upstream on the left, downstream on the right, {{ depth }} hop(s) either way.
+</p>
+{% endblock %}
+{% block head_aside %}
+<div class="depth">
+  <span class="eyebrow">Hops</span>
+  {% for d in [1, 2, 3, 5] %}
+  <a href="/lineage/{{ graph.focus.id }}?depth={{ d }}"
+     class="{% if d == depth %}on{% endif %}">{{ d }}</a>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block content %}
+
+{#
+  Inline SVG, laid out server-side. A lineage graph is a layered DAG and the
+  layers are the hop distances the traversal already computed, so the layout is
+  arithmetic — no graph library, no build step, no JavaScript (ADR-002 allowed
+  one vendored asset here; it turned out not to be needed).
+#}
+<div class="graph-scroll">
+  <svg width="{{ graph.width }}" height="{{ graph.height }}"
+       viewBox="0 0 {{ graph.width }} {{ graph.height }}" class="lineage-graph"
+       role="img" aria-label="Lineage graph for {{ graph.focus.name }}">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+              markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" class="arrowhead"/>
+      </marker>
+    </defs>
+
+    {% for link in graph.links %}
+    <path d="M {{ link.x1 }} {{ link.y1 }}
+             C {{ (link.x1 + link.x2) / 2 }} {{ link.y1 }},
+               {{ (link.x1 + link.x2) / 2 }} {{ link.y2 }},
+               {{ link.x2 }} {{ link.y2 }}"
+          class="edge" marker-end="url(#arrow)"/>
+    {% endfor %}
+
+    {% for node in graph.placed %}
+    <a href="/lineage/{{ node.id }}?depth={{ depth }}">
+      <rect x="{{ node.x }}" y="{{ node.y }}"
+            width="{{ graph.node_width }}" height="{{ graph.node_height }}"
+            rx="3" class="node {{ node.direction }}"/>
+      <text x="{{ node.x + graph.node_width / 2 }}" y="{{ node.y + graph.node_height / 2 + 4 }}"
+            text-anchor="middle" class="node-label">{{ node.name }}</text>
+    </a>
+    {% endfor %}
+  </svg>
+</div>
+
+<p class="page-note">
+  <a href="/catalog/{{ graph.focus.id }}">Catalog entry for {{ graph.focus.name }}</a>
+</p>
+
+{% if columns %}
+<section>
+  <h2 class="section-title">Column lineage</h2>
+  <table class="runs">
+    <thead><tr><th>Column</th><th>Comes from</th><th>Transformation</th><th>Source</th></tr></thead>
+    <tbody>
+      {% for c in columns %}
+      <tr>
+        <td class="mono">{{ c.downstream_column }}</td>
+        <td class="mono">{{ c.upstream_name }}.{{ c.upstream_column }}</td>
+        <td class="muted">
+          {{ c.transformation_type or '—' }}{% if c.transformation_subtype %}
+          / {{ c.transformation_subtype }}{% endif %}
+        </td>
+        <td><span class="intg">{{ c.source }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

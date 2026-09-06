@@ -1,0 +1,218 @@
+# Real producers, locally.
+#
+# The whole point: `simulate.py` is my reconstruction of what the real
+# integrations emit, and validating the correlator against it is circular. This
+# stack runs a genuine Airflow with the real OpenLineage provider so the events
+# arriving at the gateway are ones we did not write.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Airflow: http://localhost:8081  (admin / admin)
+#
+# Deliberately NOT part of the default stack: it pulls a ~1GB image and runs a
+# scheduler, which nobody wants when they just asked for a lineage gateway.
+
+name: dataspine
+
+services:
+  airflow:
+    image: apache/airflow:3.0.2
+    # SequentialExecutor + SQLite: this exists to emit real OpenLineage events,
+    # not to be a production Airflow. Standalone mode gives us scheduler, API
+    # server and a UI in one container.
+    command: bash -c "airflow db migrate && airflow standalone"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+
+      # The integration under test. `transport.type=http` is the stock
+      # OpenLineage HTTP transport -- no dataspine-specific client anywhere.
+      AIRFLOW__OPENLINEAGE__TRANSPORT: >-
+        {"type": "http",
+         "url": "http://gateway:8080",
+         "endpoint": "api/v1/lineage",
+         "auth": {"type": "api_key", "apiKey": "${DATASPINE_TOKEN_VALUE:-}"}}
+      AIRFLOW__OPENLINEAGE__NAMESPACE: prod-airflow
+      AIRFLOW__OPENLINEAGE__DISABLED: "false"
+
+      # Installed at container start so we do not need a custom image just to
+      # add one provider.
+      # dbt-core runs inside the Airflow worker, which is the real-world
+      # pattern we are validating -- not a separate service that fakes the
+      # handoff. openlineage-dbt provides the `dbt-ol` wrapper.
+      _PIP_ADDITIONAL_REQUIREMENTS: >-
+        apache-airflow-providers-openlineage>=2.18.0
+        dbt-core>=1.9
+        dbt-postgres>=1.9
+        dbt-spark[PyHive]>=1.9
+        openlineage-dbt>=1.52.0
+      DBT_PROFILES_DIR: /opt/airflow/dbt
+      OPENLINEAGE_URL: http://gateway:8080
+      OPENLINEAGE_API_KEY: ${DATASPINE_TOKEN_VALUE:-}
+      OPENLINEAGE_NAMESPACE: dbt://analytics
+    ports:
+      - "${DATASPINE_BIND:-127.0.0.1}:8081:8080"
+    volumes:
+      - ./dev/dags:/opt/airflow/dags
+      - ./dev/dbt:/opt/airflow/dbt
+      - airflow-home:/opt/airflow
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+  # Real Spark with the OpenLineage listener. `profiles` keeps it out of the
+  # default `up` -- it is a one-shot job runner, not a service.
+  spark:
+    build:
+      context: ./dev/spark
+    profiles: ["spark"]
+    environment:
+      DATASPINE_TOKEN_VALUE: ${DATASPINE_TOKEN_VALUE:-}
+    volumes:
+      - ./dev/spark:/work
+    working_dir: /work
+    depends_on:
+      gateway:
+        condition: service_healthy
+    command: >-
+      /opt/spark/bin/spark-submit
+      --master local[2]
+      --conf 'spark.redaction.regex=(?i)secret|password|token|access[.]?key|api[._-]?key'
+      --conf spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
+      --conf spark.openlineage.transport.type=http
+      --conf spark.openlineage.transport.url=http://gateway:8080
+      --conf spark.openlineage.transport.endpoint=/api/v1/lineage
+      --conf spark.openlineage.transport.auth.type=api_key
+      --conf spark.openlineage.transport.auth.apiKey=${DATASPINE_TOKEN_VALUE:-}
+      --conf spark.openlineage.namespace=spark://local-dev
+      --conf spark.openlineage.parentJobNamespace=prod-airflow
+      --conf spark.openlineage.parentJobName=analytics_daily.dbt_run_marts
+      --conf spark.openlineage.parentRunId=${DATASPINE_SPARK_PARENT_RUN_ID:-}
+      --conf spark.eventLog.enabled=true
+      --conf spark.eventLog.dir=file:///work/eventlog
+      /work/job.py
+
+  # Spark Thrift Server, so dbt-spark can be validated over the connection
+  # method ADR-003 says the reference deployment actually uses.
+  #
+  # D6 is the reason this exists. Every dbt validation so far ran against
+  # dbt-postgres; job naming and the parent handoff are adapter-independent and
+  # carry over, but **dataset namespaces are not** -- and Phase 04's lineage
+  # graph joins on exactly those. This is the last unproven claim reachable
+  # without a cloud account.
+  #
+  #   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+  #     --profile thrift up -d
+  #   make validate-thrift
+  thrift:
+    build:
+      context: ./dev/thrift
+    profiles: ["thrift"]
+    ports:
+      - "${DATASPINE_BIND:-127.0.0.1}:10000:10000"
+    volumes:
+      - ./dev/thrift/warehouse:/warehouse
+      - ./dev/thrift/eventlog:/eventlog
+    depends_on:
+      gateway:
+        condition: service_healthy
+      # The catalog must be serving before Spark starts, or the first DDL fails
+      # with a connection error that looks like a misconfiguration.
+      iceberg-rest:
+        condition: service_healthy
+    command:
+      - --conf
+      - spark.redaction.regex=(?i)secret|password|token|access[.]?key|api[._-]?key
+      - --conf
+      - spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
+      - --conf
+      - spark.openlineage.transport.type=http
+      - --conf
+      - spark.openlineage.transport.url=http://gateway:8080
+      - --conf
+      - spark.openlineage.transport.endpoint=/api/v1/lineage
+      - --conf
+      - spark.openlineage.transport.auth.type=api_key
+      - --conf
+      - spark.openlineage.transport.auth.apiKey=${DATASPINE_TOKEN_VALUE:-}
+      - --conf
+      - spark.openlineage.namespace=spark://thrift-dev
+      # Event logging on, so the same run can also be costed from the log --
+      # which is how Phase 05 gets core-seconds without an AWS call.
+      - --conf
+      - spark.eventLog.enabled=true
+      - --conf
+      - spark.eventLog.dir=file:///eventlog
+      - --conf
+      - spark.sql.warehouse.dir=file:/warehouse
+      - --conf
+      - spark.hadoop.javax.jdo.option.ConnectionURL=jdbc:derby:;databaseName=/warehouse/metastore_db;create=true
+      # Iceberg, through the REST catalog. `defaultCatalog` is what makes dbt
+      # produce Iceberg tables without dbt knowing anything about catalogs: an
+      # unqualified `analytics_marts.stg_customers` resolves here, so the models
+      # are unchanged and the storage format is a deployment concern -- which is
+      # exactly how it arrives on a real stack.
+      - --conf
+      - spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+      - --conf
+      - spark.sql.catalog.iceberg=org.apache.iceberg.spark.SparkCatalog
+      - --conf
+      - spark.sql.catalog.iceberg.type=rest
+      - --conf
+      - spark.sql.catalog.iceberg.uri=http://iceberg-rest:8181
+      - --conf
+      - spark.sql.catalog.iceberg.warehouse=file:///warehouse/iceberg
+      - --conf
+      - spark.sql.catalog.iceberg.io-impl=org.apache.iceberg.hadoop.HadoopFileIO
+      - --conf
+      - spark.sql.defaultCatalog=iceberg
+      - --conf
+      - spark.hive.server2.thrift.port=10000
+      - --conf
+      - spark.hive.server2.thrift.bind.host=0.0.0.0
+    healthcheck:
+      # The port opening is the only signal that matters: dbt-spark connects
+      # over it, and a thrift server that is up but not listening looks
+      # identical to one that is still starting.
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/10000' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # An Iceberg REST catalog.
+  #
+  # This is the piece that makes the Iceberg reader usable on a real deployment.
+  # `read_iceberg_metadata` takes a path to a specific `NNNNN-<uuid>.metadata.json`
+  # file, and Iceberg writes a new one on *every commit* -- so a configured path
+  # is stale by the next write. A catalog is the thing that answers "where is the
+  # current metadata for analytics_marts.stg_customers", which is the only way to
+  # poll an Iceberg table that anyone is actually writing to.
+  #
+  # REST is validated here because it is the open standard and runs offline;
+  # Glue speaks the same shape and is written from its documented API without an
+  # account, exactly as the warehouse pollers are (D9).
+  iceberg-rest:
+    image: apache/iceberg-rest-fixture:1.9.1
+    profiles: ["thrift", "iceberg"]
+    environment:
+      # A file-backed warehouse shared with the thrift server. No MinIO: an
+      # object store would add a moving part without changing what is under
+      # test, which is the catalog protocol and the metadata it points at.
+      CATALOG_WAREHOUSE: file:///warehouse/iceberg
+      CATALOG_IO__IMPL: org.apache.iceberg.hadoop.HadoopFileIO
+    ports:
+      - "${DATASPINE_BIND:-127.0.0.1}:8181:8181"
+    volumes:
+      - ./dev/thrift/warehouse:/warehouse
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/8181' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+volumes:
+  airflow-home:

@@ -1,0 +1,1585 @@
+/* dataspine UI.
+   No framework, no build step (ADR-002). Tokens first, components second.
+
+   THREE RULES, and the rest of this file follows from them.
+
+   **1. Success is quiet, and its colour is load-bearing.** Completed is the
+   overwhelmingly common state, so the *word* stays neutral -- `--ok` is a grey,
+   and a page of finished work reads as calm text. Only the **fill** carries a
+   hue, on dots and bars where a scanning eye needs to sort states at a glance.
+
+   That fill is a teal-leaning sage (hue ~152), and the lean is the whole point.
+   The obvious sage sits near hue 132 and collapses against crit to ΔE 0.052
+   under protanopia -- below the 0.05 line where two states are simply one
+   colour. Rotating toward teal buys the separation back at 0.105 while still
+   reading as green. Do not "correct" it toward a purer green; that is the
+   change that breaks it, and `docs/design.md` carries the measurement.
+
+   Chroma is otherwise spent on running, warn and crit alone: navigation, links
+   and focus are achromatic. There is deliberately no `--accent`.
+
+   This is also the accessible answer, which is how it was found. Measured in
+   OKLab against simulated colour deficiency, the old green and red collapsed to
+   a distance of 0.043 under deuteranopia and warn/crit to 0.068 -- a
+   just-noticeable difference is about 0.02, so for roughly 8% of men a failed
+   run and a slow run were the same colour. Nudging hues does not fix it:
+   keeping green and pushing crit toward vermillion still collapsed at 0.043.
+   Removing green does. Every pair now separates by at least 0.11 under both
+   deuteranopia and protanopia.
+
+   **2. A state has a fill colour and a text colour, and they are not the same.**
+   The amber that separates cleanly from red as a 3px bar measures 2.6:1 as
+   text, well under the 4.5:1 floor. So `--warn` is the readable one for words
+   and `--warn-fill` is the vivid one for dots, bars and washes. Same for crit.
+
+   **3. Neutrals are untinted.** A colour cast in the greys is low-volume chroma
+   competing with the three that carry meaning.
+
+   Contrast is measured, not guessed: every text token clears 4.5:1 on both
+   surface and ground, in both themes. Dark-mode ink deliberately stops at
+   13.2:1 rather than 16.5:1 -- near-white on near-black halates, and this is a
+   tool people keep open for hours.
+
+   THEMING has three states, not two. An explicit choice stamps `data-theme` on
+   <html> (see web.set_theme -- a cookie and a form, no JavaScript). With no
+   choice stored nothing is stamped and only the media query applies. So: :root
+   carries light, the media query carries dark but yields to an explicit light,
+   and [data-theme="dark"] carries dark again so the toggle wins in both
+   directions. The dark values are duplicated because there is no build step to
+   hoist them; keep the two blocks in sync. */
+
+/* Two variable faces and one static pair, all self-hosted. ADR-002's rule is
+   no build step and no external assets, and a Google Fonts <link> would break
+   an air-gapped install and phone home from a deployment that must not -- so
+   the latin subsets are vendored beside this file. Newsreader carries the page
+   titles and the wordmark; Hanken Grotesk carries the prose; Plex Mono carries
+   every identifier, count and duration. */
+@font-face {
+  font-family: "Hanken Grotesk"; font-style: normal; font-weight: 300 700;
+  font-display: swap; src: url("/static/fonts/hanken-grotesk-latin-variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader"; font-style: normal; font-weight: 300 600;
+  font-display: swap; src: url("/static/fonts/newsreader-latin-variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400;
+  font-display: swap; src: url("/static/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500;
+  font-display: swap; src: url("/static/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+}
+
+:root {
+  color-scheme: light;
+
+  --ground:     #f1f1f2;
+  --rail:       #eaeaec;
+  --surface:    #ffffff;
+  --surface-2:  #e2e2e5;
+  --ink:        #1b1b1e;
+  --ink-2:      #44444a;
+  --ink-3:      #63636b;
+  /* The imported design specified #d4d4d9, which measures 1.48:1 on --surface
+     and misses the 1.5 floor in docs/design.md. Two steps darker clears it at
+     1.51:1 and is not a visible difference. */
+  --rule:       #d2d2d7;
+  --rule-faint: #e4e4e8;
+  --rule-2:     #9d9da8;
+  --track:      #dcdce1;
+
+  /* text                 fill (dots, bars)        wash (pill grounds) */
+  /* The text role is a shade darker than the fill: 4.38:1 on --ground is
+     under the floor, and a completed pill sits on ground on some pages. */
+  --ok:         #6a6a74;  --ok-fill:      #56967a;  --ok-wash:      #eaeaee;
+  --running:    #1f5fd0;  --running-fill: #1f5fd0;  --running-wash: #e6edfa;
+  --warn:       #8a5e00;  --warn-fill:    #d18f00;  --warn-wash:    #faf0d8;
+  --crit:       #a3271c;  --crit-fill:    #c1372a;  --crit-wash:    #fbe8e5;
+
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Serif for titles only. It is the one place the interface is allowed a
+     voice: a page title is read once, not scanned, so it can afford it. */
+  --serif: Newsreader, Georgia, "Times New Roman", serif;
+
+  /* A scale, rather than whatever rem value each component reached for. */
+  --t-xs:   0.6875rem;   /* 11px  - eyebrows, meta, table headers */
+  --t-sm:   0.78125rem;  /* 12.5px - secondary text, badges */
+  --t-base: 0.84375rem;  /* 13.5px - body */
+  --t-md:   0.9375rem;   /* 15px  - emphasis, card titles */
+  --t-lg:   1.25rem;     /* 20px  - card titles, incident headings */
+  --t-xl:   1.875rem;    /* 30px  - page titles */
+
+  --step: 0.25rem;       /* every margin and pad is a multiple of this */
+}
+
+/* No stored choice: follow the OS, but yield to an explicit light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  color-scheme: dark;
+
+  --ground:     #131317;
+  --rail:       #17171c;
+  --surface:    #1b1b21;
+  --surface-2:  #25252c;
+  --ink:        #d9d9e0;
+  --ink-2:      #a5a5af;
+  --ink-3:      #8b8b96;
+  --rule:       #3a3a44;
+  --rule-faint: #2a2a32;
+  --rule-2:     #54545f;
+  --track:      #2a2a32;
+
+  --ok:         #8a8a95;  --ok-fill:      #7cbb9d;  --ok-wash:      #24242a;
+  --running:    #6fa4f0;  --running-fill: #6fa4f0;  --running-wash: #16233a;
+  --warn:       #e5b352;  --warn-fill:    #e0a63a;  --warn-wash:    #2a2210;
+  --crit:       #f08076;  --crit-fill:    #e2564a;  --crit-wash:    #2e1815;
+  }
+}
+
+/* An explicit dark choice beats a light OS. Keep in sync with the block above. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ground:     #131317;
+  --rail:       #17171c;
+  --surface:    #1b1b21;
+  --surface-2:  #25252c;
+  --ink:        #d9d9e0;
+  --ink-2:      #a5a5af;
+  --ink-3:      #8b8b96;
+  --rule:       #3a3a44;
+  --rule-faint: #2a2a32;
+  --rule-2:     #54545f;
+  --track:      #2a2a32;
+
+  --ok:         #8a8a95;  --ok-fill:      #7cbb9d;  --ok-wash:      #24242a;
+  --running:    #6fa4f0;  --running-fill: #6fa4f0;  --running-wash: #16233a;
+  --warn:       #e5b352;  --warn-fill:    #e0a63a;  --warn-wash:    #2a2210;
+  --crit:       #f08076;  --crit-fill:    #e2564a;  --crit-wash:    #2e1815;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links are achromatic and earn their affordance from an underline, not a hue.
+   The underline is offset and thin so a page dense with identifiers does not
+   turn into a field of rules. */
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-2);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+a:hover { text-decoration-color: currentColor; }
+
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 0;
+}
+
+code, .mono { font-family: var(--mono); font-size: .94em; }
+
+/* Identifiers, counts and durations are mono and tabular everywhere, so columns
+   of them line up and a changing number does not reflow its neighbours. */
+.num, .when, .dur, .rr-dur, .pipe-dur, .stat .v, .tl-exec-when {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------- shell */
+
+/* A left rail, not a top bar. Seven destinations in three groups is more than a
+   horizontal strip reads well at, and the groups are the point: Operate is what
+   is happening now, Data is what exists, Govern is what it costs and whether it
+   is right. A top bar can hold the links but it cannot hold that structure, and
+   the structure is the thing worth teaching. */
+.shell {
+  display: grid;
+  grid-template-columns: 13.375rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 1.625rem 0 1.375rem;
+  background: var(--rail);
+  border-right: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* The wordmark is the name set in the serif, and that is the whole of it. The
+   design carried a separate dot mark beside the word; the colon in "wish:d" is
+   already that mark -- it is what the name means (what is happening : data) --
+   so a dot next to it would be the same gesture made twice. */
+.brand {
+  display: block;
+  padding: 0 1.375rem;
+  font-family: var(--serif);
+  font-size: 1.3125rem;
+  letter-spacing: .005em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.rail nav { display: flex; flex-direction: column; gap: 1.375rem; }
+.nav-group { display: flex; flex-direction: column; gap: 1px; }
+.nav-group > .eyebrow { padding: 0 1.375rem .4375rem; letter-spacing: .16em; }
+
+.rail nav a {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .625rem;
+  padding: .375rem 1.375rem;
+  font-size: var(--t-base);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.rail nav a:hover { color: var(--ink); }
+/* The current page is a filled slab with a rule down its leading edge -- an
+   underline cannot mark a vertical list, and a colour would spend chroma the
+   state tokens need. */
+.rail nav a.on {
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+.rail nav a svg { width: 15px; height: 15px; opacity: .85; }
+.nav-badge {
+  font-family: var(--mono);
+  font-size: .65625rem;
+  color: var(--crit);
+  font-variant-numeric: tabular-nums;
+}
+
+.rail-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .875rem;
+  padding: 0 1.375rem;
+}
+
+/* A segmented control: three buttons that look like one object, so the choice
+   reads as a set rather than three unrelated actions. */
+.theme { display: flex; border: 1px solid var(--rule); }
+.theme button {
+  font: inherit;
+  flex: 1;
+  text-align: center;
+  font-size: .65625rem;
+  letter-spacing: .04em;
+  padding: .3125rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  margin: 0;
+}
+.theme button + button { border-left: 1px solid var(--rule); }
+.theme button:hover { color: var(--ink); }
+.theme button.on { color: var(--ink); background: var(--surface-2); }
+.theme button:focus-visible { position: relative; z-index: 1; }
+
+.logout button {
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-2);
+  text-underline-offset: 2px;
+}
+.logout button:hover { color: var(--ink); }
+
+.filters button, .login button {
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: .3rem .8rem;
+  border: 1px solid var(--rule-2);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.filters button:hover { border-color: var(--ink-3); color: var(--ink); }
+
+main {
+  padding: 2.125rem 2.5rem 3.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.875rem;
+  min-width: 0;
+  max-width: 93.75rem;
+}
+
+/* Under about 60rem the rail costs more than it carries: it becomes a strip
+   above the content, groups laid out inline. */
+@media (max-width: 60rem) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    padding: .75rem 1rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand, .nav-group > .eyebrow, .rail-foot { padding: 0; }
+  .nav-group > .eyebrow { display: none; }
+  .rail nav { flex-direction: row; flex-wrap: wrap; gap: .75rem 1.25rem; }
+  .nav-group { flex-direction: row; gap: .25rem; }
+  .rail nav a { padding: .25rem .5rem; }
+  .rail nav a.on { box-shadow: inset 0 -2px 0 var(--ink); }
+  .rail-foot { margin-top: 0; margin-left: auto; flex-direction: row; align-items: center; gap: 1rem; }
+  main { padding: 1.25rem 1rem 3.75rem; }
+}
+
+/* An eyebrow labels a region once, quietly. It is the only uppercase in the
+   interface, which is what keeps it readable as a label rather than as noise. */
+.eyebrow {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* The login page has nowhere to navigate to, so it drops the rail entirely
+   rather than showing seven links that all bounce back to the form. */
+.shell-bare { grid-template-columns: minmax(0, 1fr); }
+.shell-bare main { max-width: none; align-items: center; justify-content: center; }
+
+/* A caveat is a page-level qualification of everything below it: not an error,
+   but something that makes the numbers mean less than they appear to. */
+.caveat {
+  margin: 0;
+  max-width: 45rem;
+  padding: .875rem 1rem;
+  background: var(--warn-wash);
+  font-size: var(--t-sm);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------------------------------- page head */
+
+/* Every page opens the same way: where you are, what this is, and one sentence
+   of why it is shaped the way it is. The sentence is not decoration -- most of
+   these views answer a question by *not* showing something, and the note is
+   where that gets said. */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+  flex-wrap: wrap;
+}
+.page-head > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: .3125rem;
+  min-width: 0;
+  max-width: 45rem;
+}
+h1.page-title {
+  font-family: var(--serif);
+  font-size: var(--t-xl);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: 0;
+  margin: 0;
+}
+.page-note {
+  margin: .25rem 0 0;
+  font-size: var(--t-sm);
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.section-title, h2.section-title {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ health */
+
+/* A row of counts. `.stats` is an alias for `.health` because the overview
+   used the name and got no layout at all -- six numbers stacked in a column
+   down the page, which is most of what made it read as unfinished. */
+.health, .stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-bottom: 1.25rem;
+}
+.stat {
+  background: var(--surface);
+  padding: .5rem .95rem .55rem;
+  display: flex;
+  flex-direction: column;
+  gap: .05rem;
+  min-width: 6.5rem;
+  flex: 1 1 0;
+}
+.stat .k {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.stat .v {
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+}
+/* A zero is not news. Dimming it lets a non-zero count carry the alarm on its
+   own, without colour doing the work twice. */
+.stat.zero .v { color: var(--ink-3); }
+.stat.bad .v { color: var(--crit); }
+.health-note {
+  flex: 1 1 100%;
+  background: var(--crit-wash);
+  color: var(--crit);
+  margin: 0;
+  padding: .55rem 1.1rem;
+  font-size: .82rem;
+}
+
+/* ----------------------------------------------------------------- filters */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.filters input[type="search"], .filters select, .login input {
+  font: inherit;
+  font-size: .85rem;
+  padding: .32rem .55rem;
+  border: 1px solid var(--rule-2);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 0;
+}
+.filters input[type="search"] { min-width: 16rem; }
+.check { display: flex; align-items: center; gap: .35rem; font-size: .85rem; color: var(--ink-2); }
+
+/* ------------------------------------------------------------------ tables */
+
+table { width: 100%; border-collapse: collapse; }
+.runs {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+.runs thead th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: .55rem .8rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--rule-2);
+  white-space: nowrap;
+}
+.runs tbody td {
+  padding: .5rem .8rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+}
+.runs tbody tr:last-child td { border-bottom: none; }
+.runs tbody tr:hover { background: var(--surface-2); }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bad-num { color: var(--crit); }
+.when, .rid { color: var(--ink-3); font-family: var(--mono); font-size: .78rem; white-space: nowrap; }
+.job { min-width: 18rem; }
+.job .ns {
+  display: block;
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--ink-3);
+}
+.muted { color: var(--ink-3); }
+
+.intg {
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------------ states */
+
+.state {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .08em;
+  padding: .12rem .45rem;
+  border-radius: 0;
+  white-space: nowrap;
+}
+.state.completed { color: var(--ok);      background: var(--ok-wash); }
+.state.failed    { color: var(--crit);    background: var(--crit-wash); }
+.state.aborted   { color: var(--warn);    background: var(--warn-wash); }
+.state.running   { color: var(--running); background: var(--running-wash); }
+.state.unknown   { color: var(--ink-3);   background: var(--surface-2); }
+
+.state-dot {
+  width: .5rem; height: .5rem;
+  border-radius: 50%;
+  flex: none;
+  background: var(--ink-3);
+}
+.state-dot.completed { background: var(--ok-fill); }
+.state-dot.running   { background: var(--running); }
+.state-dot.failed    { background: var(--crit-fill); border-radius: 1px; }
+.state-dot.aborted   { background: var(--warn-fill); border-radius: 1px; transform: rotate(45deg); }
+
+/* ------------------------------------------------------------- run detail */
+
+.run-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--rule-2);
+  margin-bottom: 1.5rem;
+}
+.run-head h1 {
+  font-size: 1.35rem;
+  margin: .35rem 0 .15rem;
+  letter-spacing: -.015em;
+  word-break: break-word;
+}
+.run-head .sub { margin: 0; color: var(--ink-3); font-size: .85rem; }
+.facts { display: flex; flex-wrap: wrap; gap: 1.25rem; margin: 0; }
+.facts div { display: flex; flex-direction: column; gap: .1rem; }
+.facts dt {
+  font-family: var(--mono);
+  font-size: .62rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.facts dd { margin: 0; font-variant-numeric: tabular-nums; font-size: .9rem; }
+.facts dd.mono { font-size: .72rem; color: var(--ink-2); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.1rem;
+}
+.panel h2 {
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 0 0 .7rem;
+}
+.panel h3 {
+  font-size: .8rem;
+  color: var(--ink-2);
+  margin: 1.2rem 0 .4rem;
+}
+.panel-note { margin: -.4rem 0 .9rem; color: var(--ink-3); font-size: .82rem; }
+.panel.error { border-left: 3px solid var(--crit); }
+
+pre {
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: .78rem;
+  line-height: 1.5;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  padding: .7rem .8rem;
+  border-radius: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+pre.err-msg { background: var(--crit-wash); border-color: transparent; color: var(--crit); }
+pre.trace { margin-top: .5rem; white-space: pre; word-break: normal; }
+pre.sql { white-space: pre; word-break: normal; }
+
+details summary {
+  cursor: pointer;
+  font-size: .8rem;
+  color: var(--ink-2);
+  margin-top: .6rem;
+}
+
+/* -------------------------------------------------------------------- tree */
+
+.tree, .tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tree ul {
+  margin-left: .55rem;
+  padding-left: .85rem;
+  border-left: 1px solid var(--rule-2);
+}
+.tree li { padding: .1rem 0; }
+.node {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .25rem .4rem;
+  border-radius: 0;
+  flex-wrap: wrap;
+}
+.node.current {
+  background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--ink-3);
+}
+.node-name { font-size: .85rem; word-break: break-all; }
+.node .dur {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.node .warn {
+  font-family: var(--mono);
+  font-size: .66rem;
+  color: var(--warn);
+  background: var(--warn-wash);
+  padding: .05rem .35rem;
+  border-radius: 0;
+}
+.node-error {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--crit);
+  margin: .1rem 0 .3rem 1.05rem;
+  padding-left: .5rem;
+  border-left: 2px solid var(--crit);
+  word-break: break-word;
+}
+
+/* ------------------------------------------------------------------- misc */
+
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  gap: 1.1rem;
+  align-items: start;
+}
+.cols .panel { margin-bottom: 0; }
+
+.mini { font-size: .82rem; }
+.mini thead th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: .3rem .4rem;
+  border-bottom: 1px solid var(--rule);
+}
+.mini td { padding: .3rem .4rem; border-bottom: 1px solid var(--rule); }
+.mini tr:last-child td { border-bottom: none; }
+.mini tr.current-row { background: var(--surface-2); }
+.ds { font-family: var(--mono); font-size: .74rem; word-break: break-all; }
+.dir {
+  font-family: var(--mono);
+  font-size: .62rem;
+  letter-spacing: .06em;
+  color: var(--ink-3);
+}
+.dir.output { color: var(--ink-2); font-weight: 500; }
+
+.facets { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+.facets li {
+  font-size: .7rem;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  padding: .1rem .4rem;
+  border-radius: 0;
+  color: var(--ink-2);
+}
+
+.pager {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1.1rem 0;
+  font-size: .85rem;
+  color: var(--ink-3);
+}
+
+/* An empty state is a sentence, not a container. The dashed box it used to sit
+   in drew a frame around the absence of anything and made "nothing running" --
+   the good case, most of the time -- the largest object on the page. */
+.empty {
+  margin: 0;
+  max-width: 40rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--rule);
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+.empty p { margin: 0 0 .35rem; }
+.empty p:last-child { margin-bottom: 0; }
+.empty pre { display: inline-block; text-align: left; margin-top: .5rem; }
+
+.login {
+  max-width: 20rem;
+  margin: 4rem auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.75rem;
+}
+.login h1 { font-family: var(--mono); font-size: 1.1rem; margin: 0 0 1.25rem; }
+.login form { display: flex; flex-direction: column; gap: .5rem; }
+.login label {
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.login-error { color: var(--crit); font-size: .82rem; }
+.login-note { color: var(--ink-3); font-size: .78rem; margin-top: 1rem; }
+
+/* ------------------------------------------------------------- deep links */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin: -.6rem 0 1.2rem;
+}
+.link-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .35rem;
+  font-family: var(--mono);
+  font-size: .72rem;
+  padding: .22rem .55rem;
+  border: 1px solid var(--rule-2);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink-2);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+a.link-chip:hover { border-color: var(--ink-3); color: var(--ink); text-decoration: none; }
+.link-chip.ref { color: var(--ink-3); }
+.link-chip.ref b { color: var(--ink-2); font-weight: 500; }
+
+.facts dd.late { color: var(--warn); }
+
+/* ---------------------------------------------------------- spark metrics */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-bottom: .5rem;
+}
+.metric {
+  background: var(--surface);
+  padding: .5rem .7rem;
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+.metric .k {
+  font-family: var(--mono);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.metric .v { font-size: .95rem; font-variant-numeric: tabular-nums; }
+.metric.bad .v { color: var(--crit); }
+
+.findings { list-style: none; padding: 0; margin: .4rem 0 0; display: flex; flex-direction: column; gap: .4rem; }
+.finding {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  padding: .5rem .7rem;
+  border: 1px solid var(--rule);
+  border-left-width: 3px;
+  background: var(--surface-2);
+}
+.finding.warning { border-left-color: var(--warn); }
+.finding.critical { border-left-color: var(--crit); }
+.finding.info { border-left-color: var(--ink-3); }
+.finding .sev {
+  font-family: var(--mono);
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: .2rem;
+  min-width: 4rem;
+}
+.finding b { font-size: .85rem; }
+.finding p { margin: .15rem 0 0; font-size: .8rem; color: var(--ink-2); }
+.table-scroll { overflow-x: auto; }
+
+/* ---------------------------------------------------------------- monitors */
+
+/* Status wears the same visual grammar as run state, because it answers the
+   same question in the same place. `insufficient_data` is deliberately quiet:
+   a monitor with nothing to measure yet is not a warning, and colouring it like
+   one is how a new install ends up looking broken on day one. */
+/* Status is a word in a colour, not a filled chip. In a table of a dozen checks
+   the chips tiled into a column of coloured blocks that read as the loudest
+   thing on the page -- and most of them say "ok", which is the state nobody
+   needs to be told about. The wash moves to the row instead, where it marks the
+   one line that is actually wrong. */
+.status {
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.status.ok                { color: var(--ok); }
+.status.breach            { color: var(--crit); }
+.status.error             { color: var(--warn); }
+.status.insufficient_data,
+.status.none              { color: var(--ink-3); }
+
+/* The row carries the alarm. `.status` is left as the word so the state is
+   still readable when the wash is invisible -- greyscale, or a bad projector. */
+tr.is-breach > td { background: var(--crit-wash); }
+
+
+.breaches { margin-bottom: 1.75rem; }
+.breach-list { list-style: none; margin: 0; padding: 0; }
+.breach-list li {
+  display: flex;
+  gap: .75rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--crit);
+  padding: .55rem .8rem;
+  margin-bottom: .4rem;
+}
+.breach-msg { color: var(--ink-2); font-size: .85rem; }
+.breach-list .when { margin-left: auto; }
+
+
+.plain-list { list-style: none; margin: 0; padding: 0; color: var(--ink-2); }
+.plain-list li { font-size: .82rem; padding: .12rem 0; }
+
+/* Metric history. Bars rather than a line: there is no build step and no
+   JavaScript (ADR-002), and the question a history answers here is "is the
+   latest one unlike the others", which bars answer as well as a sparkline. */
+.sparkbars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 3.5rem;
+  padding: .5rem .6rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.sparkbar {
+  flex: 1 0 4px;
+  min-width: 4px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.sparkbar-fill {
+  width: 100%;
+  background: var(--ink-3);
+  opacity: .85;
+  min-height: 1px;
+}
+
+tr.off td { opacity: .55; }
+
+/* Feedback controls. Present only on learned-baseline monitors, where there is
+   actually a baseline to teach. */
+.feedback { display: flex; gap: .3rem; align-items: center; }
+.feedback button {
+  font: inherit;
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .06em;
+  padding: .12rem .4rem;
+  border: 1px solid var(--rule-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  cursor: pointer;
+  border-radius: 0;
+}
+.feedback button:hover { color: var(--ink); border-color: var(--ink-3); }
+.feedback button.link { border: none; background: none; text-decoration: underline; }
+
+.label {
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .06em;
+  padding: .12rem .4rem;
+  border-radius: 0;
+}
+.label.expected { color: var(--ok);   background: var(--ok-wash); }
+.label.anomaly  { color: var(--crit); background: var(--crit-wash); }
+
+/* ---------------------------------------------------------------- lineage */
+
+/* The graph is inline SVG laid out server-side (ADR-002 held: no build step,
+   no framework, no vendored graph library). Colours come from the same tokens
+   as everything else so the page reads as one product. */
+.graph-scroll {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: .5rem;
+  margin-bottom: 1.25rem;
+}
+.lineage-graph { display: block; }
+.lineage-graph .edge { fill: none; stroke: var(--rule-2); stroke-width: 1.5; }
+.lineage-graph .arrowhead { fill: var(--rule-2); }
+.lineage-graph .node {
+  fill: var(--surface-2);
+  stroke: var(--rule-2);
+  stroke-width: 1;
+}
+.lineage-graph .node.focus { fill: var(--surface-2); stroke: var(--ink); stroke-width: 2; }
+.lineage-graph a:hover .node { stroke: var(--ink); }
+.lineage-graph .node-label {
+  font-family: var(--mono);
+  font-size: .68rem;
+  fill: var(--ink);
+  pointer-events: none;
+}
+
+.depth { display: flex; gap: .3rem; align-items: center; }
+.depth a {
+  font-family: var(--mono);
+  font-size: .7rem;
+  padding: .15rem .45rem;
+  border: 1px solid var(--rule-2);
+  border-radius: 0;
+  color: var(--ink-3);
+}
+.depth a.on { color: var(--ink); border-color: var(--ink); background: var(--surface-2); }
+
+.button {
+  display: inline-block;
+  font-size: .82rem;
+  padding: .3rem .8rem;
+  border: 1px solid var(--rule-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border-radius: 0;
+}
+.button:hover { border-color: var(--ink-3); color: var(--ink); }
+
+/* An incident is three bands: what broke, why, and what it took with it. The
+   cause band is washed and the blast radius is not, because the whole claim the
+   page makes is that those are different kinds of fact -- one is the thing to
+   go and fix, the rest is what will come back on its own once you have. */
+.incident {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+.incident + .incident { margin-top: 1.25rem; }
+
+.incident-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: .9375rem 1.125rem;
+  border-bottom: 1px solid var(--rule-faint);
+  flex-wrap: wrap;
+}
+.incident-head h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-lg);
+  letter-spacing: 0;
+}
+.incident-head .when { font-family: var(--mono); font-size: var(--t-sm); color: var(--ink-3); }
+
+.incident-cause {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  padding: .875rem 1.125rem;
+  background: var(--crit-wash);
+  flex-wrap: wrap;
+}
+.incident-cause a { font-family: var(--mono); font-size: var(--t-sm); }
+.incident-msg { font-size: var(--t-sm); color: var(--ink-2); }
+
+/* Solid rather than washed: this is a label, and the one place in the interface
+   where a filled block is the right weight -- it names the single fact the rest
+   of the card is subordinate to. */
+.status-tag {
+  padding: .0625rem .5rem;
+  background: var(--crit-fill);
+  color: var(--surface);
+  font-size: .625rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  flex: none;
+}
+
+.incident-blast { padding: 1rem 1.125rem; }
+.incident-note { margin: 0; font-size: var(--t-sm); color: var(--ink-2); }
+.incident-blast .runs { margin-top: .75rem; }
+
+.filters .clear { font-size: .8rem; color: var(--ink-3); margin-left: .5rem; }
+.filters input[type="search"] {
+  font: inherit;
+  font-size: .85rem;
+  padding: .3rem .5rem;
+  border: 1px solid var(--rule-2);
+  background: var(--surface);
+  color: var(--ink);
+  min-width: 22rem;
+  border-radius: 0;
+}
+
+/* ------------------------------------------------------------------ run list
+   Pipeline cards with a drawn hierarchy. The unit is an execution, not a run:
+   see the comment at the top of runs.html for why.
+
+   The indent rail is the load-bearing piece. Depth is a data attribute rather
+   than a class per level, so an unexpectedly deep tree degrades to a wide indent
+   instead of losing its rail entirely. */
+
+.lane { margin: 26px 0 8px; }
+.lane > h2 {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0 0 10px;
+}
+.lane-n {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0;
+  color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
+.lane-head { display: flex; align-items: center; gap: 10px; margin: 0; }
+.lane-pip { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.lane-pip.live   { background: var(--running); box-shadow: 0 0 0 3px var(--running-wash); }
+.lane-pip.queued { background: var(--warn-fill); box-shadow: 0 0 0 3px var(--warn-wash); }
+.lane-pip.done   { background: var(--ink-3); }
+/* A ruled aside, not a dashed box. A box drawn around the absence of anything
+   makes "nothing in flight" -- the good case, most of the time -- the largest
+   object on the page. */
+.lane-empty {
+  margin: 0;
+  max-width: 40rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--rule);
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+.lane-caveat { display: block; margin-top: 5px; font-size: 12px; color: var(--ink-3); opacity: .85; }
+
+.pipe {
+  border: 1px solid var(--rule); border-radius: 0; background: var(--surface);
+  margin-bottom: 10px; overflow: hidden;
+}
+/* A status stripe, so state survives being scanned at arm's length. */
+.pipe-live { border-left: 3px solid var(--running); }
+.pipe-bad  { border-left: 3px solid var(--crit); }
+
+.pipe-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap; padding: 12px 15px;
+}
+.pipe-title { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+.pipe-title a { font-weight: 600; font-size: var(--t-md); color: var(--ink);
+  text-decoration: none; letter-spacing: -.01em; }
+.pipe-title a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.pipe-title a:hover { text-decoration: underline; }
+.pipe-ns { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.pipe-meta { display: flex; align-items: baseline; gap: 12px; font-size: 12px; color: var(--ink-3); }
+.pipe-count, .pipe-when { white-space: nowrap; }
+.pipe-dur { font-family: var(--mono); color: var(--ink-2); }
+
+.tag {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 0; padding: 2px 6px;
+}
+.tag-bad  { background: var(--crit-wash);    color: var(--crit); }
+.tag-live { background: var(--running-wash); color: var(--running); }
+
+.pipe-body > summary {
+  cursor: pointer; padding: 7px 15px; font-size: 12px; color: var(--ink-3);
+  border-top: 1px solid var(--rule); background: var(--surface-2);
+  list-style: none;
+}
+.pipe-body > summary::-webkit-details-marker { display: none; }
+.pipe-body > summary::before { content: "▸ "; }
+.pipe-body[open] > summary::before { content: "▾ "; }
+.pipe-alone { margin: 0; padding: 10px 15px; border-top: 1px solid var(--rule);
+              font-size: 12px; color: var(--ink-3); }
+
+.rr-list { border-top: 1px solid var(--rule); }
+
+/* One run. Grid rather than flex so the infra column lines up down the whole
+   card regardless of how long the job names are -- misaligned metadata is what
+   makes a dense list unreadable. */
+.rr {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px 20px minmax(0, 1fr) auto 72px;
+  align-items: center; gap: 10px;
+  padding: 6px 15px 6px 0;
+  text-decoration: none; color: inherit;
+  border-bottom: 1px solid var(--rule);
+}
+.rr:last-child { border-bottom: 0; }
+.rr:hover { background: var(--surface-2); }
+
+/* Indent + rail. --d is set per depth below; the rail is an absolutely
+   positioned border so it spans the full row height and reads as a continuous
+   line down the tree. */
+.rr { padding-left: calc(15px + var(--d, 0) * 20px); }
+.rr-rail {
+  position: absolute; left: calc(15px + (var(--d, 0) - 1) * 20px + 6px);
+  top: 0; bottom: 0; width: 1px; background: var(--rule-2);
+}
+.rr.d0 .rr-rail { display: none; }
+.rr.d0 { --d: 0; } .rr.d1 { --d: 1; } .rr.d2 { --d: 2; } .rr.d3 { --d: 3; }
+.rr.d4 { --d: 4; } .rr.d5 { --d: 5; } .rr.d6 { --d: 6; } .rr.d7 { --d: 7; }
+.rr.d8 { --d: 8; }
+
+.rr-tool, .rr-state { display: flex; align-items: center; justify-content: center; }
+.rr-tool { color: var(--ink-3); }
+.rr:hover .rr-tool { color: var(--ink-2); }
+
+.rr-name { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+.rr-job {
+  font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rr-what { font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+
+/* Infrastructure: icon + label + the specific instance. The instance (an EMR
+   cluster id, a thrift host) is the part that answers "which one", so it is
+   present but quieter than the platform name. */
+/* No pill around it. Enclosing this in a bordered capsule made it read as a
+   control you could press, and there are up to three of them per row -- at that
+   density the chrome outweighed the fact. Icon plus quiet text says the same
+   thing and lets the run name stay the loudest object in the row. */
+.rr-infra {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink-2); white-space: nowrap;
+}
+.rr-infra-detail { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.rr-dur { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); text-align: right; }
+
+/* State dots. Colour alone is not the signal -- each dot also differs in fill or
+   ring -- because red/green is the single most common colour-vision confusion
+   and a run list is exactly where it would matter. */
+/* State reads as a silhouette before it reads as a colour: circle for the
+   ordinary outcomes, square for failed, diamond for aborted, dashed ring for
+   unknown. Colour alone would leave a deuteranope, a greyscale print and a bad
+   projector with nothing -- and the shapes stay distinct at 8px, which is the
+   only size that matters here. */
+.dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; flex: none;
+}
+.dot-completed { background: var(--ok-fill); }
+.dot-running   { background: var(--running); box-shadow: 0 0 0 3px var(--running-wash); }
+.dot-failed {
+  background: var(--crit-fill);
+  border-radius: 1px;                       /* square */
+  box-shadow: 0 0 0 3px var(--crit-wash);
+}
+.dot-aborted {
+  background: var(--warn-fill);
+  border-radius: 1px;
+  transform: rotate(45deg);                 /* diamond */
+}
+.dot-unknown   { background: transparent; border: 1.5px dashed var(--rule-2); }
+
+.ico { flex: none; vertical-align: middle; }
+
+@media (max-width: 720px) {
+  /* Drop the infra label to its icon; the tooltip still carries the full name. */
+  .rr { grid-template-columns: 14px 20px minmax(0, 1fr) auto 56px; }
+  .rr-infra-label, .rr-infra-detail { display: none; }
+  .rr-infra { padding: 2px 6px; }
+}
+
+/* Table format on the catalog, from the producer's own storage facet. Quiet by
+   design: it is a property of the table, not a warning about it. */
+.fmt {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: var(--ink-2); white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- overview
+   The band leads, the columns follow. Everything expands via native <details>
+   (ADR-002) -- no JavaScript, so it works with a keyboard, with find-in-page,
+   and with scripting off.                                                     */
+
+/* ------------------------------------------------------------ header line */
+
+/* The counts ride in the page header rather than taking a block of stat tiles.
+   They are supporting evidence for the band below, not the headline: six tiles
+   at the top of a page is the layout every dashboard gets by default and it
+   says less than one line of the same numbers. */
+.now-counts {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 1.125rem;
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+.now-counts > span { display: flex; align-items: baseline; gap: .375rem; }
+.now-counts .n { font-size: 1.0625rem; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.now-counts .l { font-family: var(--sans); font-size: var(--t-sm); }
+.now-counts .is-live { color: var(--ink); }
+.now-counts .is-warn { color: var(--warn); }
+.now-counts .is-crit { color: var(--crit); }
+/* A zero is not news. Dimming it rather than dropping it keeps the metric
+   findable while letting a non-zero count carry the alarm on its own. */
+.now-counts .is-zero, .now-counts .is-zero .n { color: var(--ink-3); }
+
+/* ------------------------------------------------------------------- band */
+
+.band {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  margin-bottom: 1.5rem;
+}
+.band-head {
+  display: flex; align-items: center; gap: .9rem;
+  padding: .55rem .9rem;
+  border-bottom: 1px solid var(--rule);
+}
+.band-peak { font-size: var(--t-sm); color: var(--ink-3); }
+.band-peak strong {
+  color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums;
+}
+.band-head .window-picker { margin: 0 0 0 auto; }
+.band-body { padding: .5rem .9rem .7rem; }
+
+.window-picker { display: flex; gap: .25rem; }
+.window-picker a {
+  font-size: var(--t-xs); padding: .1rem .45rem; border-radius: 0;
+  text-decoration: none; color: var(--ink-3); border: 1px solid transparent;
+  font-variant-numeric: tabular-nums;
+}
+.window-picker a:hover { color: var(--ink); }
+.window-picker a.on { color: var(--ink); background: var(--surface-2); border-color: var(--rule-2); }
+
+.tl-axis {
+  display: flex; justify-content: space-between;
+  margin-left: 13rem; padding-bottom: .35rem;
+  color: var(--ink-3); font-size: var(--t-xs);
+  border-bottom: 1px solid var(--rule);
+}
+@media (max-width: 760px) { .tl-axis { margin-left: 7rem; } }
+
+.tl-lane > summary {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .1rem 0; cursor: pointer; list-style: none;
+  border-radius: 0;
+}
+.tl-lane > summary::-webkit-details-marker { display: none; }
+.tl-lane > summary:hover,
+.tl-lane[open] > summary { background: var(--surface-2); }
+
+.tl-name {
+  flex: 0 0 12.4rem; width: 12.4rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--ink-2); font-family: var(--mono); font-size: var(--t-xs);
+  padding-left: .6rem;
+}
+.tl-name::before {
+  content: "›"; color: var(--ink-3); margin-right: .35rem;
+  display: inline-block; transition: transform .12s ease;
+}
+.tl-lane[open] > summary .tl-name::before { transform: rotate(90deg); }
+@media (max-width: 760px) { .tl-name { flex-basis: 6.4rem; width: 6.4rem; } }
+
+/* A ruled track, so a bar's position reads against something. */
+.tl-track {
+  position: relative; flex: 1 1 auto; height: 18px;
+  background: linear-gradient(
+    to right, var(--rule) 0 1px, transparent 1px
+  ) repeat-x;
+  background-size: 12.5% 100%;
+  border-radius: 0;
+}
+.tl-count {
+  flex: 0 0 auto; min-width: 1.6rem; text-align: right; padding-right: .5rem;
+  color: var(--ink-3); font-size: var(--t-xs); font-variant-numeric: tabular-nums;
+}
+
+.tl-bar {
+  position: absolute; top: 4px; bottom: 4px;
+  /* s-failed overrides this to fill the track -- see below. */
+  min-width: 3px; border-radius: 1px;
+  background: var(--ok-fill);
+}
+.tl-lane > summary:hover .tl-bar { filter: brightness(1.15); }
+.tl-bar.s-failed  { background: var(--crit-fill); top: 1px; bottom: 1px; }
+.tl-bar.s-aborted { background: var(--warn-fill); }
+.tl-bar.s-running { background: var(--running); }
+.tl-bar.s-unknown { background: var(--ink-3); }
+
+/* Still going: an open right edge, and a soft leading pulse so live work is
+   findable without scanning every lane. */
+.tl-bar.is-live {
+  border-top-right-radius: 0; border-bottom-right-radius: 0;
+  box-shadow: 2px 0 0 var(--running);
+}
+/* Started before the window: a cut left edge, so a clamped bar is not read as
+   a pipeline that began exactly when the window did. */
+.tl-bar.is-clipped { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+
+.tl-detail { padding: .25rem 0 .55rem 13rem; }
+@media (max-width: 760px) { .tl-detail { padding-left: 1rem; } }
+
+.tl-exec { border-left: 1px solid var(--rule-2); margin: .15rem 0; }
+.tl-exec > summary {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .2rem .6rem; cursor: pointer; list-style: none;
+  font-size: var(--t-sm);
+}
+.tl-exec > summary::-webkit-details-marker { display: none; }
+.tl-exec > summary:hover { background: var(--surface-2); }
+.tl-exec-when { font-family: var(--mono); }
+.tl-exec .drop { padding-left: .6rem; }
+
+/* ---------------------------------------------------------------- columns */
+
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.5rem; }
+@media (max-width: 940px) { .cols { grid-template-columns: 1fr; } }
+
+.cols .section-title { margin: 0 0 .6rem; }
+
+/* ------------------------------------------------------------- live board */
+
+.board { list-style: none; margin: 0; padding: 0; }
+.board > li + li { border-top: 1px solid var(--rule); }
+
+/* One grid for every in-flight row. The columns used to be inline spans in a
+   flow, so nothing lined up and the eye re-scanned each row instead of reading
+   down one. Numbers are tabular and right-aligned; the name is the only elastic
+   column, so it absorbs the width and truncates rather than pushing the figures
+   around. */
+.board-row > summary {
+  display: grid;
+  grid-template-columns:
+    auto              /* state          */
+    minmax(0, 1fr)    /* job name       */
+    3.25rem           /* steps          */
+    4.5rem            /* progress       */
+    4.25rem           /* elapsed        */
+    4.5rem            /* usual duration */
+    auto              /* infrastructure */
+    auto;             /* flags          */
+  align-items: center;
+  gap: .6rem;
+  padding: .4rem .6rem .4rem .7rem;
+  cursor: pointer;
+  list-style: none;
+}
+.board-row > summary::-webkit-details-marker { display: none; }
+.board-row > summary:hover { background: var(--surface-2); }
+.board-row.is-slow   > summary { box-shadow: inset 2px 0 0 var(--warn-fill); }
+.board-row.is-failed > summary { box-shadow: inset 2px 0 0 var(--crit-fill); }
+
+.c-job {
+  font-weight: 500; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.board-row > summary:hover .c-job { text-decoration: underline; text-underline-offset: 2px; }
+
+.c-steps, .c-el, .c-med {
+  font-family: var(--mono); font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+.c-steps { color: var(--ink-2); }
+.c-el    { color: var(--ink-2); }
+.c-med   { color: var(--ink-3); }
+.c-infra { justify-self: start; min-width: 0; }
+.c-flags { display: flex; gap: .35rem; justify-self: end; }
+
+/* A short bar, not a full-width hairline: at full width it read as a divider
+   between rows rather than a quantity belonging to one. */
+.bar {
+  display: block; width: 100%; height: 3px;
+  background: var(--surface-2); border-radius: 0; overflow: hidden;
+}
+.bar-fill { display: block; height: 100%; background: var(--running); }
+.is-failed .bar-fill { background: var(--crit-fill); }
+
+.board-infra {
+  display: inline-flex; align-items: center; gap: .25rem;
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.board-infra .ico { opacity: .7; flex: none; }
+
+/* Narrow: drop the comparison and the cluster before the numbers that say
+   whether the thing is moving at all. */
+@media (max-width: 1180px) {
+  .board-row > summary { grid-template-columns: auto minmax(0,1fr) 3.25rem 4.5rem 4.25rem auto; }
+  .c-med, .c-infra { display: none; }
+}
+
+.board-infra {
+  display: inline-flex; align-items: center; gap: .25rem;
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3);
+}
+.board-infra .ico { opacity: .7; }
+
+.flag {
+  font-size: var(--t-xs); padding: .05rem .35rem; border-radius: 0;
+  white-space: nowrap; font-weight: 500;
+}
+.flag.warn { color: var(--warn); background: var(--warn-wash); }
+.flag.crit { color: var(--crit); background: var(--crit-wash); }
+
+/* ------------------------------------------------------ needs attention */
+
+.att { margin-bottom: 1.1rem; }
+.att .eyebrow { display: block; margin-bottom: .3rem; }
+.att-crit .eyebrow { color: var(--crit); }
+
+.att-list { list-style: none; margin: 0; padding: 0; }
+.att-list li {
+  padding: .35rem 0 .35rem .7rem;
+  border-left: 2px solid var(--rule);
+  margin-bottom: .2rem;
+}
+.att-crit .att-list li { border-left-color: var(--crit); }
+.att-list a { font-size: var(--t-sm); font-weight: 500; }
+.att-why {
+  display: block; font-size: var(--t-xs); color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.att-why.is-warn { color: var(--warn); }
+
+/* ------------------------------------------------- the expanded panel ---- */
+
+.drop {
+  padding: .4rem 0 .7rem .9rem;
+  border-top: 1px dashed var(--rule);
+}
+.drop-more {
+  display: inline-block; margin-top: .45rem;
+  font-size: var(--t-xs); color: var(--ink-3);
+}
+.drop-more:hover { color: var(--ink); }
+
+/* The icon sprite: present in the DOM for <use> to reference, clipped out of
+   flow rather than display:none, which some engines decline to resolve. */
+.ico-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.att-more { margin: .3rem 0 0 .7rem; font-size: var(--t-xs); color: var(--ink-3); }
+
+/* The only motion in the interface is the disclosure marker rotating, and even
+   that is a preference someone may have turned off at the OS level. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The agent handoff page. Reached from a Slack button, by someone who may have
+   no session here, so it is narrower than the app pages and carries no nav --
+   it is a single decision, not a place to navigate from. */
+.handoff { max-width: 46rem; }
+.handoff .crumb { font-size: var(--t-xs); margin: 0 0 1.5rem; }
+.handoff h1 { font-size: var(--t-lg); margin: 0 0 .35rem; }
+.handoff h2 {
+  font-size: var(--t-md);
+  margin: 2rem 0 .5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+.handoff p { margin: 0 0 .75rem; max-width: 60ch; line-height: 1.55; }
+
+/* The briefing runs to a screenful and is meant to be selected whole, so it
+   scrolls in place rather than pushing the actions off the page. */
+.handoff pre.briefing { max-height: 26rem; overflow-y: auto; white-space: pre-wrap; }
+
+.btn {
+  display: inline-block;
+  padding: .5rem .9rem;
+  background: var(--ink);
+  color: var(--ground);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  font-size: var(--t-base);
+  text-decoration: none;
+}
+.btn:hover { background: var(--ink-2); border-color: var(--ink-2); color: var(--ground); }

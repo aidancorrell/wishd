@@ -1,0 +1,11 @@
+title = "wish:d secret scanning"
+
+[extend]
+useDefault = true
+
+# Hadoop's cipher algorithm is a public constant, not an API credential.
+# Do not ignore fixture files: the Spark capture has contained a real token.
+[[allowlists]]
+description = "Hadoop cipher algorithm name"
+regexTarget = "match"
+regexes = ['''hadoop\.security\.key\.default\.cipher["\\:= ]+AES/CTR/NoPadding''']

@@ -1,0 +1,176 @@
+{# Platform icons.
+
+   Inline SVG, drawn here rather than fetched. ADR-002's rule is no build step
+   and no external assets: a CDN icon font would break an air-gapped install and
+   phone home from a deployment that must not, so these are hand-drawn glyphs
+   with `currentColor` fills that inherit whatever the surrounding text is.
+
+   They are marks, not logos. Reproducing vendor trademarks in an Apache-2.0
+   repo is a licensing question nobody wants; a recognisable *shape* per platform
+   (a DAG for Airflow, a chevron stack for Spark, a snowflake for Snowflake)
+   carries the same meaning at 14px without borrowing anyone's brand.
+
+   Every icon is 16x16 on a 0 0 16 16 viewBox so they align without per-icon CSS. #}
+
+{# Icons are defined once in a sprite and referenced by `<use>`.
+
+   They used to be inlined per call site, which is fine on a page with twenty
+   rows and not fine on the overview: every `<details>` renders its contents
+   whether open or shut, so a seven-day window emitted 781 copies of these
+   shapes and **half the page was repeated icon markup**. A sprite makes each
+   reference about forty bytes.
+
+   Still zero external assets (ADR-002) -- the sprite is inlined into the page
+   by `base.html`, so there is no request to make and nothing to cache-bust. #}
+
+{% macro glyph(key) -%}
+{%- if key == 'airflow' -%}
+    {# a small DAG: two parents converging on a child #}
+    <circle cx="3.5" cy="3.5" r="2" fill="currentColor"/>
+    <circle cx="12.5" cy="3.5" r="2" fill="currentColor"/>
+    <circle cx="8" cy="12.5" r="2" fill="currentColor"/>
+    <path d="M4.6 5.2 7 10.6M11.4 5.2 9 10.6" stroke="currentColor" stroke-width="1.3"
+          fill="none" stroke-linecap="round"/>
+  {%- elif key == 'dbt' -%}
+    {# a build: stacked layers resolving upward #}
+    <path d="M8 1.6 14.4 5 8 8.4 1.6 5z" fill="currentColor"/>
+    <path d="M1.6 8 8 11.4 14.4 8" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round"/>
+    <path d="M1.6 11 8 14.4 14.4 11" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round" opacity=".55"/>
+  {%- elif key == 'spark' -%}
+    {# parallel chevrons: fan-out across executors #}
+    <path d="M3 2.5 7.5 8 3 13.5M8 2.5 12.5 8 8 13.5" stroke="currentColor"
+          stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif key == 'emr' -%}
+    {# a cluster: a fleet of nodes under one roof #}
+    <path d="M1.5 5.2 8 1.8l6.5 3.4" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round"/>
+    <rect x="2.4" y="7" width="3" height="3.2" rx=".6" fill="currentColor"/>
+    <rect x="6.5" y="7" width="3" height="3.2" rx=".6" fill="currentColor"/>
+    <rect x="10.6" y="7" width="3" height="3.2" rx=".6" fill="currentColor"/>
+    <path d="M2.4 12.4h11.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  {%- elif key == 'iceberg' -%}
+    {# an iceberg: the visible tip over a larger mass, which is also the point
+       of the format -- the metadata on top is what anyone reads #}
+    <path d="M8 1.6 12.4 6.4H3.6z" fill="currentColor"/>
+    <path d="M3.6 6.4h8.8l1.6 8H2z" stroke="currentColor" stroke-width="1.3"
+          fill="none" stroke-linejoin="round" opacity=".7"/>
+  {%- elif key == 'glue' -%}
+    {# a catalog: bound records #}
+    <rect x="2.4" y="2.2" width="11.2" height="11.6" rx="1.4"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <path d="M5.6 2.2v11.6M8.2 5.6h3.2M8.2 8h3.2M8.2 10.4h3.2"
+          stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  {%- elif key == 'snowflake' -%}
+    <path d="M8 1.5v13M2.4 4.4l11.2 7.2M13.6 4.4 2.4 11.6" stroke="currentColor"
+          stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  {%- elif key == 'databricks' -%}
+    <path d="M2 5.4 8 2.2l6 3.2-6 3.2z" fill="currentColor"/>
+    <path d="M2 9.2 8 12.4l6-3.2" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round"/>
+  {%- elif key == 'bigquery' -%}
+    <circle cx="7.2" cy="7.2" r="4.6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+    <path d="M10.6 10.6 14 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  {%- elif key in ('postgres', 'mysql', 'redshift', 'hive') -%}
+    {# a database: the universal cylinder #}
+    <ellipse cx="8" cy="3.6" rx="5.4" ry="2.1" stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <path d="M2.6 3.6v8.8c0 1.16 2.42 2.1 5.4 2.1s5.4-.94 5.4-2.1V3.6"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <path d="M2.6 8c0 1.16 2.42 2.1 5.4 2.1s5.4-.94 5.4-2.1"
+          stroke="currentColor" stroke-width="1.3" fill="none" opacity=".65"/>
+  {%- elif key in ('s3', 'gcs', 'adls') -%}
+    {# object storage: a bucket #}
+    <path d="M2.6 4.2h10.8l-1.2 9.2H3.8z" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round"/>
+    <path d="M2 4.2h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  {%- elif key == 'file' -%}
+    <path d="M4 1.8h5l3.2 3.2v9.2H4z" stroke="currentColor" stroke-width="1.4"
+          fill="none" stroke-linejoin="round"/>
+    <path d="M9 1.8V5h3.2" stroke="currentColor" stroke-width="1.4" fill="none"/>
+  {%- elif key == 'now' -%}
+    {# a clock: the only view in the tool that is about this instant #}
+    <circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M8 4.6V8l2.4 1.6" stroke="currentColor" stroke-width="1.3"
+          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif key == 'runs' -%}
+    {# a list that narrows: many runs, fewer pipelines, one story #}
+    <path d="M2.2 4.4h11.6M2.2 8h8.2M2.2 11.6h5" stroke="currentColor"
+          stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  {%- elif key == 'incidents' -%}
+    {# the warning triangle, which is the one shape everybody already reads #}
+    <path d="M8 2.6 14 13H2z" stroke="currentColor" stroke-width="1.3"
+          fill="none" stroke-linejoin="round"/>
+    <path d="M8 6.4v3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  {%- elif key == 'datasets' -%}
+    {# the same cylinder the storage platforms use, at nav weight #}
+    <ellipse cx="8" cy="4.2" rx="5.4" ry="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M2.6 4.2v7.6c0 1.1 2.4 2 5.4 2s5.4-.9 5.4-2V4.2"
+          stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M2.6 8c0 1.1 2.4 2 5.4 2s5.4-.9 5.4-2" stroke="currentColor"
+          stroke-width="1.3" fill="none"/>
+  {%- elif key == 'jobs' -%}
+    {# a job recurs: an arrow that comes back round to where it started #}
+    <path d="M13.2 6.6A5.4 5.4 0 1 0 13.4 9.6" stroke="currentColor"
+          stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    <path d="M13.4 3.2v3.6h-3.6" stroke="currentColor" stroke-width="1.3"
+          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif key == 'checks' -%}
+    {# a trace crossing a threshold -- a check is a line and a limit #}
+    <path d="M2.4 9.4h2.7l1.8-4.6 2.2 6.6 1.5-3.2h2.9" stroke="currentColor"
+          stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  {%- elif key == 'cost' -%}
+    {# bars of unequal height: spend is a distribution, not a total #}
+    <path d="M2.6 13V9.2M6.4 13V5.6M10.2 13V7.8M14 13V3" stroke="currentColor"
+          stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  {%- elif key == 'lineage' -%}
+    {# one node fanning out to two: the whole premise, at 15px #}
+    <circle cx="3.4" cy="8" r="1.7" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <circle cx="12.6" cy="4" r="1.7" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <circle cx="12.6" cy="12" r="1.7" stroke="currentColor" stroke-width="1.3" fill="none"/>
+    <path d="M5.1 7.4l5.9-2.6M5.1 8.6l5.9 2.6" stroke="currentColor"
+          stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  {%- elif key == 'search' -%}
+    <circle cx="7" cy="7" r="4.4" stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <path d="M10.3 10.3 14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+  {%- else -%}
+    {# unknown: a question we are not pretending to have answered #}
+    <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4"
+            fill="none" stroke-dasharray="2.6 2.2"/>
+  {%- endif -%}
+{%- endmacro %}
+
+
+{# Emitted once per page, at the top of <body>. Hidden, but not with
+   `display:none` on the element itself -- Safari has historically declined to
+   render `<use>` references into a `display:none` sprite, so it is clipped out
+   of flow instead. #}
+{% macro sprite() -%}
+<svg class="ico-sprite" aria-hidden="true" focusable="false"><defs>
+{%- for key in ["airflow", "dbt", "spark", "emr", "iceberg", "glue", "snowflake", "databricks", "bigquery", "postgres", "mysql", "redshift", "hive", "s3", "gcs", "adls", "file", "now", "runs", "incidents", "datasets", "jobs", "checks", "cost", "lineage", "search", "unknown"] %}
+  <symbol id="ico-{{ key }}" viewBox="0 0 16 16">{{ glyph(key) }}</symbol>
+{%- endfor %}
+</defs></svg>
+{%- endmacro %}
+
+
+{% macro icon(key, title='') -%}
+{%- set known = ["airflow", "dbt", "spark", "emr", "iceberg", "glue", "snowflake", "databricks", "bigquery", "postgres", "mysql", "redshift", "hive", "s3", "gcs", "adls", "file", "now", "runs", "incidents", "datasets", "jobs", "checks", "cost", "lineage", "search", "unknown"] -%}
+<svg class="ico ico-{{ key }}" viewBox="0 0 16 16" width="16" height="16"
+     aria-hidden="{{ 'false' if title else 'true' }}"
+     {% if title %}role="img"{% endif %} focusable="false">
+  {%- if title %}<title>{{ title }}</title>{% endif -%}
+  <use href="#ico-{{ key if key in known else 'unknown' }}"/>
+</svg>
+{%- endmacro %}
+
+
+{# A run's state as a dot, so a scanning eye finds failures without reading. #}
+{# The dot is frequently the only thing carrying state -- run rows and timeline
+   entries show it with no state word beside it -- so it is labelled rather than
+   hidden. Shape and colour cover sighted users; this covers the rest. #}
+{% macro state_dot(state) -%}
+<span class="dot dot-{{ (state or 'unknown')|lower }}"
+      role="img" aria-label="{{ (state or 'unknown')|lower }}"
+      title="{{ (state or 'unknown')|lower }}"></span>
+{%- endmacro %}

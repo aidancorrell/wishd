@@ -1,0 +1,463 @@
+{
+ "args": {
+  "allow_jinja_file_extensions": false,
+  "cache_selected_only": false,
+  "debug": true,
+  "defer": false,
+  "empty": false,
+  "enable_grouped_warn_error_parser_logs": false,
+  "exclude": [],
+  "exclude_resource_types": [],
+  "export_saved_queries": false,
+  "favor_state": false,
+  "hints_enabled": false,
+  "include_saved_query": false,
+  "indirect_selection": "eager",
+  "introspect": true,
+  "invocation_command": "dbt --log-format json --debug build --target default --profile user --profiles-dir /tmp/jobs/55555555555551/.dbt --project-dir /tmp/jobs/55555555555551/target",
+  "latest_version_pointer_enabled_by_default": false,
+  "log_file_max_bytes": 10485760,
+  "log_format": "json",
+  "log_format_file": "json",
+  "log_level": "info",
+  "log_level_file": "debug",
+  "log_path": "/tmp/jobs/55555555555551/target/logs",
+  "macro_debugging": false,
+  "manage_state": false,
+  "maximum_seed_size_mib": 1,
+  "partial_parse": true,
+  "partial_parse_file_diff": true,
+  "populate_cache": true,
+  "print": true,
+  "printer_width": 80,
+  "profile": "user",
+  "profiles_dir": "/tmp/jobs/55555555555551/.dbt",
+  "project_dir": "/tmp/jobs/55555555555551/target",
+  "quiet": false,
+  "require_all_warnings_handled_by_warn_error": true,
+  "require_batched_execution_for_custom_microbatch_strategy": true,
+  "require_corrected_analysis_fqns": false,
+  "require_explicit_package_overrides_for_builtin_materializations": true,
+  "require_generic_test_arguments_property": true,
+  "require_message_labels": false,
+  "require_nested_cumulative_type_params": true,
+  "require_ref_searches_node_package_before_root": false,
+  "require_resource_names_without_spaces": true,
+  "require_source_and_semantic_model_names_without_spaces": false,
+  "require_sql_header_in_test_configs": false,
+  "require_unique_project_resource_names": false,
+  "require_valid_schema_from_generate_schema_name": false,
+  "require_yaml_configuration_for_mf_time_spines": true,
+  "resource_types": [],
+  "select": [],
+  "send_anonymous_usage_stats": true,
+  "show": false,
+  "show_all_deprecations": false,
+  "show_resource_report": false,
+  "skip_nodes_if_on_run_start_fails": true,
+  "skip_semantic_layer": false,
+  "skip_write_msgpack_if_exist": false,
+  "snowflake_projects_otel": false,
+  "source_freshness_run_project_hooks": true,
+  "sqlparse": {
+   "MAX_GROUPING_DEPTH": null,
+   "MAX_GROUPING_TOKENS": null
+  },
+  "state_modified_compare_more_unrendered_values": true,
+  "state_modified_compare_vars": false,
+  "static_parser": true,
+  "strict_mode": false,
+  "support_custom_ref_kwargs": false,
+  "target": "default",
+  "upload_to_artifacts_ingest_api": false,
+  "use_catalogs_v2": false,
+  "use_colors": true,
+  "use_colors_file": true,
+  "use_experimental_job_health_monitor": false,
+  "use_experimental_skip_nodes_synchronously": false,
+  "use_fast_test_edges": false,
+  "use_v2_parser": false,
+  "v2_parser": "/venv/dbt-latest-fusion/bin/dbt parse",
+  "validate_macro_args": true,
+  "vars": {},
+  "version_check": true,
+  "vortex_event_forwarding_enabled": false,
+  "warn_error_options": {
+   "error": [],
+   "silence": [],
+   "warn": []
+  },
+  "which": "build",
+  "write_json": true
+ },
+ "elapsed_time": 6.144922256469727,
+ "metadata": {
+  "dbt_schema_version": "https://schemas.getdbt.com/dbt/run-results/v6.json",
+  "dbt_version": "2026.9.1+9adbe3e",
+  "env": {
+   "DBT_CLOUD_ACCOUNT_ID": "11111111111110",
+   "DBT_CLOUD_ENVIRONMENT_ID": "44444444444440",
+   "DBT_CLOUD_JOB_ID": "33333333333330",
+   "DBT_CLOUD_PROJECT_ID": "22222222222220",
+   "DBT_CLOUD_RUN_ID": "55555555555551",
+   "DBT_CLOUD_RUN_REASON": "webhook path test",
+   "DBT_CLOUD_RUN_REASON_CATEGORY": "other",
+   "DBT_CLOUD_RUN_TRIGGER_CATEGORY": "RUN_REASON_CATEGORY_API",
+   "DBT_CLOUD_RUN_UUID": "01a07269-c345-7a2e-9489-09d6a7599cc0"
+  },
+  "generated_at": "2026-09-05T16:32:25.443702Z",
+  "invocation_id": "7962073c-26af-40ea-8367-c1ee387f5cb3",
+  "invocation_started_at": "2026-09-05T16:32:17.321814Z"
+ },
+ "results": [
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-8020-0008-28e60001c112",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "-- Inline rather than a seed so this runs on an empty warehouse.\nselect 101 as customer_id, 'Acme Corp'   as customer_name, 'enterprise' as segment\nunion all select 102, 'Globex',    'smb'\nunion all select 103, 'Initech',   'enterprise'\nunion all select 104, 'Umbrella',  'smb'",
+   "execution_time": 0.5706086158752441,
+   "failures": null,
+   "message": "SUCCESS 1",
+   "overload_results": null,
+   "relation_name": "ANALYTICS_DB.PUBLIC.stg_customers",
+   "status": "success",
+   "thread_id": "Thread-3 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:21.528711Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:21.499028Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:22.061538Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:21.530482Z"
+    }
+   ],
+   "unique_id": "model.analytics.stg_customers"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7fdc-0008-28e60001a202",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "select 1 as order_id, 101 as customer_id, 250.00 as amount, '2026-09-01'::date as ordered_on\nunion all select 2, 102, 40.00,   '2026-09-02'::date\nunion all select 3, 103, 1250.50, '2026-09-03'::date\nunion all select 4, 101, 75.25,   '2026-09-04'::date\nunion all select 5, 104, 610.00,  '2026-09-05'::date",
+   "execution_time": 1.220268726348877,
+   "failures": null,
+   "message": "SUCCESS 1",
+   "overload_results": null,
+   "relation_name": "ANALYTICS_DB.PUBLIC.stg_orders",
+   "status": "success",
+   "thread_id": "Thread-4 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:21.546596Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:21.500060Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:22.711952Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:21.571712Z"
+    }
+   ],
+   "unique_id": "model.analytics.stg_orders"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 5",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7fdc-0008-28e60001a1fe",
+    "rows_affected": 5,
+    "rows_deleted": 0,
+    "rows_duplicates": 0,
+    "rows_inserted": 5,
+    "rows_updated": 0
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "-- Deliberately imperfect, and the imperfections are the point.\n--\n--   order_id  has one NULL     -> not_null fails    (severity: error)\n--   item_id   has one duplicate -> unique warns     (severity: warn)\n--\n-- That pairing is what makes this project useful: it proves an alert fires for\n-- the failure and stays silent for the warning, which is the distinction most\n-- alerting gets wrong.\nselect 1 as item_id, 1 as order_id, 2 as quantity, 125.00 as line_amount\nunion all select 2, 2,    1, 40.00\nunion all select 3, null, 3, 300.00     -- not_null(order_id) fails here\nunion all select 3, 4,    1, 75.25      -- item_id 3 repeated: unique warns here\nunion all select 5, 5,    2, 610.00",
+   "execution_time": 1.2328214645385742,
+   "failures": null,
+   "message": "SUCCESS 5",
+   "overload_results": null,
+   "relation_name": "ANALYTICS_DB.PUBLIC.fct_order_items",
+   "status": "success",
+   "thread_id": "Thread-2 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:21.529829Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:21.494187Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:22.723108Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:21.555717Z"
+    }
+   ],
+   "unique_id": "model.analytics.fct_order_items"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7fdc-0008-28e60001a206",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\nselect\n    item_id as unique_field,\n    count(*) as n_records\n\nfrom ANALYTICS_DB.PUBLIC.fct_order_items\nwhere item_id is not null\ngroup by item_id\nhaving count(*) > 1\n\n\n",
+   "execution_time": 0.28214025497436523,
+   "failures": 1,
+   "message": "Got 1 result, configured to warn if != 0",
+   "overload_results": null,
+   "relation_name": null,
+   "status": "warn",
+   "thread_id": "Thread-2 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:22.809644Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:22.753604Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:23.014946Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:22.810261Z"
+    }
+   ],
+   "unique_id": "test.analytics.unique_fct_order_items_item_id.9a83f00436"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7ff8-0008-28e60001b1fe",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\n\n\nselect quantity\nfrom ANALYTICS_DB.PUBLIC.fct_order_items\nwhere quantity is null\n\n\n",
+   "execution_time": 0.3552699089050293,
+   "failures": 0,
+   "message": null,
+   "overload_results": null,
+   "relation_name": null,
+   "status": "pass",
+   "thread_id": "Thread-3 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:22.805612Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:22.747402Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:23.086575Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:22.806638Z"
+    }
+   ],
+   "unique_id": "test.analytics.not_null_fct_order_items_quantity.2785769c03"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7ff8-0008-28e60001b1fa",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\n\n\nselect order_id\nfrom ANALYTICS_DB.PUBLIC.fct_order_items\nwhere order_id is null\n\n\n",
+   "execution_time": 0.36116576194763184,
+   "failures": 1,
+   "message": "Got 1 result, configured to fail if != 0",
+   "overload_results": null,
+   "relation_name": null,
+   "status": "fail",
+   "thread_id": "Thread-4 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:22.788603Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:22.734592Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:23.091288Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:22.789851Z"
+    }
+   ],
+   "unique_id": "test.analytics.not_null_fct_order_items_order_id.e887a2de02"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 5",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7ff8-0008-28e60001b202",
+    "rows_affected": 5,
+    "rows_deleted": 0,
+    "rows_duplicates": 0,
+    "rows_inserted": 5,
+    "rows_updated": 0
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "select\n    o.order_id,\n    o.customer_id,\n    c.customer_name,\n    c.segment,\n    o.amount,\n    o.ordered_on\nfrom ANALYTICS_DB.PUBLIC.stg_orders o\nleft join ANALYTICS_DB.PUBLIC.stg_customers c using (customer_id)",
+   "execution_time": 2.008507251739502,
+   "failures": null,
+   "message": "SUCCESS 5",
+   "overload_results": null,
+   "relation_name": "ANALYTICS_DB.PUBLIC.fct_orders",
+   "status": "success",
+   "thread_id": "Thread-5 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:22.762603Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:22.717213Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:24.724358Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:22.763357Z"
+    }
+   ],
+   "unique_id": "model.analytics.fct_orders"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7fdc-0008-28e60001a20e",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\n\n\nselect order_id\nfrom ANALYTICS_DB.PUBLIC.fct_orders\nwhere order_id is null\n\n\n",
+   "execution_time": 0.2548947334289551,
+   "failures": 0,
+   "message": null,
+   "overload_results": null,
+   "relation_name": null,
+   "status": "pass",
+   "thread_id": "Thread-3 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:24.802493Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:24.743771Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:24.987790Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:24.805299Z"
+    }
+   ],
+   "unique_id": "test.analytics.not_null_fct_orders_order_id.4e687af8d0"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7ff8-0008-28e60001b206",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\n\n\nselect customer_id\nfrom ANALYTICS_DB.PUBLIC.fct_orders\nwhere customer_id is null\n\n\n",
+   "execution_time": 0.26821279525756836,
+   "failures": 0,
+   "message": null,
+   "overload_results": null,
+   "relation_name": null,
+   "status": "pass",
+   "thread_id": "Thread-2 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:24.797556Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:24.736654Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:24.999885Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:24.798203Z"
+    }
+   ],
+   "unique_id": "test.analytics.not_null_fct_orders_customer_id.16fe324f7b"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-7fdc-0008-28e60001a20a",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\nwith child as (\n    select customer_id as from_field\n    from ANALYTICS_DB.PUBLIC.fct_orders\n    where customer_id is not null\n),\n\nparent as (\n    select customer_id as to_field\n    from ANALYTICS_DB.PUBLIC.stg_customers\n)\n\nselect\n    from_field\n\nfrom child\nleft join parent\n    on child.from_field = parent.to_field\n\nwhere parent.to_field is null\n\n\n",
+   "execution_time": 0.31095337867736816,
+   "failures": 0,
+   "message": null,
+   "overload_results": null,
+   "relation_name": null,
+   "status": "pass",
+   "thread_id": "Thread-4 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:24.807872Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:24.749690Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:25.044524Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:24.810258Z"
+    }
+   ],
+   "unique_id": "test.analytics.relationships_fct_orders_customer_id__customer_id__ref_stg_customers_.aaa6d401fd"
+  },
+  {
+   "adapter_response": {
+    "_message": "SUCCESS 1",
+    "code": "SUCCESS",
+    "query_id": "01c6df00-3204-8020-0008-28e60001c116",
+    "rows_affected": 1
+   },
+   "batch_results": null,
+   "compiled": true,
+   "compiled_code": "\n    \n    \n\nselect\n    order_id as unique_field,\n    count(*) as n_records\n\nfrom ANALYTICS_DB.PUBLIC.fct_orders\nwhere order_id is not null\ngroup by order_id\nhaving count(*) > 1\n\n\n",
+   "execution_time": 0.38774943351745605,
+   "failures": 0,
+   "message": null,
+   "overload_results": null,
+   "relation_name": null,
+   "status": "pass",
+   "thread_id": "Thread-5 (worker)",
+   "timing": [
+    {
+     "completed_at": "2026-09-05T16:32:24.808470Z",
+     "name": "compile",
+     "started_at": "2026-09-05T16:32:24.764375Z"
+    },
+    {
+     "completed_at": "2026-09-05T16:32:25.122496Z",
+     "name": "execute",
+     "started_at": "2026-09-05T16:32:24.812358Z"
+    }
+   ],
+   "unique_id": "test.analytics.unique_fct_orders_order_id.523ddb6ce5"
+  }
+ ]
+}

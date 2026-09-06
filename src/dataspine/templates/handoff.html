@@ -1,0 +1,94 @@
+{#
+  The page a Slack handoff button lands on.
+
+  Deliberately standalone rather than extending base.html: this is reached by
+  clicking a link in Slack, by someone who very likely has no session cookie for
+  the UI, and a nav bar whose every link would bounce them to /login is a worse
+  welcome than no nav bar at all.
+
+  No script, per ADR-002 and the rest of the templates. The custom-scheme links
+  below are plain anchors the reader clicks, which is also what browsers prefer:
+  a scheme handoff wants a user gesture, and an automatic one is the kind of
+  thing that gets silently blocked with no way to tell.
+#}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ briefing.title if briefing else 'Handoff' }} — wish:d</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="handoff">
+    <p class="crumb"><a href="/">wish:d</a></p>
+
+    {% if not briefing %}
+      <h1>Nothing to hand over</h1>
+      <p class="muted">
+        This alert refers to a check result that is no longer stored. Retention
+        removes them on a schedule, so an old alert eventually outlives the
+        detail behind it.
+      </p>
+    {% else %}
+      <h1>{{ briefing.title }}</h1>
+      <p class="muted">{{ briefing.what }}</p>
+
+      {% if target == 'claude-cli' %}
+        <h2>Open in Claude Code</h2>
+        <p>
+          Opens a terminal on <em>this</em> machine with the briefing staged.
+          Claude Code shows it to you before running anything.
+        </p>
+        {% if deep_link %}
+          <p><a class="btn" href="{{ deep_link }}">Open Claude Code</a></p>
+        {% else %}
+          <p class="muted">
+            No local checkout is configured, so there is nowhere to open. Set
+            <code>DATASPINE_AGENT_CWD</code> to an absolute path.
+          </p>
+        {% endif %}
+
+      {% elif target == 'codex' %}
+        <h2>Open in Codex</h2>
+        <p>
+          Codex takes the briefing on the command line — its deep link opens a
+          workspace but cannot carry a prompt. Paste this into a terminal:
+        </p>
+        <pre class="sql">{{ command }}</pre>
+        {% if app_link %}
+          <p class="muted">
+            Or <a href="{{ app_link }}">open the Codex app</a> in the configured
+            workspace, and paste the briefing below.
+          </p>
+        {% endif %}
+
+      {% elif target == 'claude-cloud' %}
+        <h2>Open in Claude Cloud</h2>
+        <p>
+          Start a session at <a href="https://claude.ai/code">claude.ai/code</a>
+          and paste the briefing below.
+        </p>
+        <p class="muted">
+          wish:d does not create the session for you. Doing that means running
+          the Claude CLI on the wish:d host, which is a deployment decision
+          rather than a default — see <code>docs/agent-handoff.md</code>.
+        </p>
+      {% endif %}
+
+      <h2>The briefing</h2>
+      <p class="muted">
+        Whatever you hand an agent, this is what wish:d knows. Select and copy.
+      </p>
+      <pre class="briefing">{{ prompt }}</pre>
+
+      <p class="muted">
+        {% if briefing.warehouse_url %}
+          <a href="{{ briefing.warehouse_url }}">The failing query in Snowsight</a> ·
+        {% endif %}
+        <a href="/catalog">Open in wish:d</a>
+      </p>
+    {% endif %}
+  </main>
+</body>
+</html>

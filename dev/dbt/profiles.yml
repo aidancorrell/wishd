@@ -1,0 +1,52 @@
+analytics:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres
+      port: 5432
+      user: dataspine
+      password: dataspine
+      dbname: dataspine
+      schema: analytics
+      threads: 1
+
+# The target that settles D6.
+#
+# ADR-003: the reference deployment is dbt-spark over `thrift`. OpenLineage's
+# dbt integration supports thrift and odbc but not session/local mode, so this
+# is the configuration that actually produces dbt-level lineage on EMR -- and
+# the one whose dataset namespaces have never been observed.
+analytics_spark:
+  target: thrift
+  outputs:
+    thrift:
+      type: spark
+      method: thrift
+      host: thrift
+      port: 10000
+      schema: analytics_marts
+      threads: 1
+      connect_retries: 5
+      connect_timeout: 60
+
+# The same connection, materialising Iceberg instead of Hive tables.
+#
+# The profile is deliberately identical to `analytics_spark` above: the storage
+# format is set by `+file_format: iceberg` in dbt_project.yml and by the Thrift
+# server's `spark.sql.defaultCatalog`, not by anything dbt is told here. That is
+# how it arrives on a real deployment -- a platform decision the dbt project
+# barely notices -- and it is what makes "does the format change what
+# OpenLineage reports?" a clean question with one variable.
+analytics_iceberg:
+  target: thrift
+  outputs:
+    thrift:
+      type: spark
+      method: thrift
+      host: thrift
+      port: 10000
+      schema: analytics_marts
+      threads: 1
+      connect_retries: 5
+      connect_timeout: 60

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% set active = 'runs' %}
+{% block title %}Not found · wish:d{% endblock %}
+{% block eyebrow %}<span class="eyebrow">Runs</span>{% endblock %}
+{% block heading %}Not found{% endblock %}
+{% block content %}
+<div class="empty">
+  <p>No run with id <code>{{ run_id }}</code>.</p>
+  <p><a href="/">Back to runs</a></p>
+</div>
+{% endblock %}

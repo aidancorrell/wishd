@@ -1,0 +1,35 @@
+{# One run inside a tree: state, tool, name, infrastructure, duration.
+
+   Shared by the run list and the overview page so a step looks identical
+   wherever it is drawn -- the hierarchy rail and the tool/infrastructure
+   split are the parts people learn to read, and relearning them per page
+   would defeat the point of separating them at all (see platforms.py). #}
+{% from "_icons.html" import icon, state_dot %}
+
+{% macro run_row(run, is_root=false) %}
+  {% set infra = infrastructure(run.job_namespace, run.integration) %}
+  {% set what = activity(run.job_type, run.job_name) %}
+  <a class="rr{% if is_root %} rr-root{% endif %} d{{ run.depth_display }}"
+     href="/runs/{{ run.run_id }}">
+    <span class="rr-rail" aria-hidden="true"></span>
+
+    <span class="rr-state">{{ state_dot(run.state) }}</span>
+
+    <span class="rr-tool" title="{{ run.integration or 'unknown' }} emitted this run">
+      {{ icon(tool(run.integration).key) }}
+    </span>
+
+    <span class="rr-name">
+      <span class="rr-job">{{ run.job_name }}</span>
+      {% if what %}<span class="rr-what">{{ what }}</span>{% endif %}
+    </span>
+
+    <span class="rr-infra" title="ran on {{ infra.label }}{% if infra.detail %} ({{ infra.detail }}){% endif %}">
+      {{ icon(infra.key) }}
+      <span class="rr-infra-label">{{ infra.label }}</span>
+      {% if infra.detail %}<span class="rr-infra-detail">{{ infra.detail }}</span>{% endif %}
+    </span>
+
+    <span class="rr-dur">{{ run.duration_ms|duration }}</span>
+  </a>
+{% endmacro %}

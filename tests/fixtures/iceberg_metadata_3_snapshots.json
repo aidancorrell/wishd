@@ -1,0 +1,159 @@
+{
+ "format-version": 2,
+ "table-uuid": "92b511d2-1f69-4618-a989-3089486aa4a0",
+ "location": "file:///warehouse/iceberg/analytics_marts_marts/stg_customers",
+ "last-sequence-number": 3,
+ "last-updated-ms": 1788225697791,
+ "last-column-id": 2,
+ "current-schema-id": 0,
+ "schemas": [
+  {
+   "type": "struct",
+   "schema-id": 0,
+   "fields": [
+    {
+     "id": 1,
+     "name": "customer_id",
+     "required": false,
+     "type": "int"
+    },
+    {
+     "id": 2,
+     "name": "segment",
+     "required": false,
+     "type": "string"
+    }
+   ]
+  }
+ ],
+ "default-spec-id": 0,
+ "partition-specs": [
+  {
+   "spec-id": 0,
+   "fields": []
+  }
+ ],
+ "last-partition-id": 999,
+ "default-sort-order-id": 0,
+ "sort-orders": [
+  {
+   "order-id": 0,
+   "fields": []
+  }
+ ],
+ "properties": {
+  "owner": "airflow",
+  "created-at": "2026-09-01T01:21:27.879573048Z",
+  "write.parquet.compression-codec": "zstd"
+ },
+ "current-snapshot-id": 7253819862971648023,
+ "refs": {
+  "main": {
+   "snapshot-id": 7253819862971648023,
+   "type": "branch"
+  }
+ },
+ "snapshots": [
+  {
+   "sequence-number": 1,
+   "snapshot-id": 5668884736443518789,
+   "timestamp-ms": 1788225689067,
+   "summary": {
+    "operation": "overwrite",
+    "spark.app.id": "local-1788225641168",
+    "added-data-files": "2",
+    "added-records": "2",
+    "added-files-size": "1422",
+    "changed-partition-count": "1",
+    "total-records": "2",
+    "total-files-size": "1422",
+    "total-data-files": "2",
+    "total-delete-files": "0",
+    "total-position-deletes": "0",
+    "total-equality-deletes": "0",
+    "engine-version": "3.5.7",
+    "app-id": "local-1788225641168",
+    "engine-name": "spark",
+    "iceberg-version": "Apache Iceberg 1.9.1 (commit f40208ae6fb2f33e578c2637d3dea1db18739f31)"
+   },
+   "manifest-list": "file:/warehouse/iceberg/analytics_marts_marts/stg_customers/metadata/snap-5668884736443518789-1-52976f40-62a1-4c7a-bf4d-b203b23d4950.avro",
+   "schema-id": 0
+  },
+  {
+   "sequence-number": 2,
+   "snapshot-id": 2647405435298487396,
+   "timestamp-ms": 1788225694271,
+   "summary": {
+    "operation": "overwrite",
+    "spark.app.id": "local-1788225641168",
+    "added-data-files": "2",
+    "added-records": "2",
+    "added-files-size": "1422",
+    "changed-partition-count": "1",
+    "total-records": "2",
+    "total-files-size": "1422",
+    "total-data-files": "2",
+    "total-delete-files": "0",
+    "total-position-deletes": "0",
+    "total-equality-deletes": "0",
+    "engine-version": "3.5.7",
+    "app-id": "local-1788225641168",
+    "engine-name": "spark",
+    "iceberg-version": "Apache Iceberg 1.9.1 (commit f40208ae6fb2f33e578c2637d3dea1db18739f31)"
+   },
+   "manifest-list": "file:/warehouse/iceberg/analytics_marts_marts/stg_customers/metadata/snap-2647405435298487396-1-ff624a38-ce99-479e-ac21-51d2ba3274c1.avro",
+   "schema-id": 0
+  },
+  {
+   "sequence-number": 3,
+   "snapshot-id": 7253819862971648023,
+   "timestamp-ms": 1788225697791,
+   "summary": {
+    "operation": "overwrite",
+    "spark.app.id": "local-1788225641168",
+    "added-data-files": "2",
+    "added-records": "2",
+    "added-files-size": "1422",
+    "changed-partition-count": "1",
+    "total-records": "2",
+    "total-files-size": "1422",
+    "total-data-files": "2",
+    "total-delete-files": "0",
+    "total-position-deletes": "0",
+    "total-equality-deletes": "0",
+    "engine-version": "3.5.7",
+    "app-id": "local-1788225641168",
+    "engine-name": "spark",
+    "iceberg-version": "Apache Iceberg 1.9.1 (commit f40208ae6fb2f33e578c2637d3dea1db18739f31)"
+   },
+   "manifest-list": "file:/warehouse/iceberg/analytics_marts_marts/stg_customers/metadata/snap-7253819862971648023-1-51811dea-4d06-4a94-a51c-682026bd67d5.avro",
+   "schema-id": 0
+  }
+ ],
+ "statistics": [],
+ "partition-statistics": [],
+ "snapshot-log": [
+  {
+   "timestamp-ms": 1788225689067,
+   "snapshot-id": 5668884736443518789
+  },
+  {
+   "timestamp-ms": 1788225694271,
+   "snapshot-id": 2647405435298487396
+  },
+  {
+   "timestamp-ms": 1788225697791,
+   "snapshot-id": 7253819862971648023
+  }
+ ],
+ "metadata-log": [
+  {
+   "timestamp-ms": 1788225689067,
+   "metadata-file": "file:/warehouse/iceberg/analytics_marts_marts/stg_customers/metadata/00000-e2e00c5d-d0ef-428d-8a21-f84d18e3dc05.metadata.json"
+  },
+  {
+   "timestamp-ms": 1788225694271,
+   "metadata-file": "file:/warehouse/iceberg/analytics_marts_marts/stg_customers/metadata/00001-e0e8d66a-2751-4d49-b945-daa770b45c4b.metadata.json"
+  }
+ ]
+}

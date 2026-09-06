@@ -1,0 +1,14 @@
+# Only release inputs enter the build context.
+*
+!pyproject.toml
+!README.md
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+!constraints.txt
+!src/
+!src/**
+!migrations/
+!migrations/**
+**/__pycache__
+**/*.pyc
+**/.DS_Store

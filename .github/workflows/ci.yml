@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main, release/wishd-v1]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          enable-cache: true
+      - name: Install
+        run: |
+          uv venv --python '${{ matrix.python }}' .venv
+          uv pip install -e '.[dev]' -c constraints.txt
+      - name: Lint
+        run: .venv/bin/ruff check src tests scripts/check_package.py scripts/prepare_public_mirror.py deploy/github-action/impact.py
+      - name: Test with embedded Postgres
+        run: .venv/bin/pytest -q
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Build sdist and wheel from sdist
+        run: uv build
+      - name: Install and exercise the wheel outside the source tree
+        run: |
+          uv venv --python 3.12 .dev/wheel-env
+          uv pip install --python .dev/wheel-env/bin/python dist/*.whl pgserver -c constraints.txt
+          .dev/wheel-env/bin/python scripts/check_package.py
+      - name: Check distribution metadata
+        run: uvx twine check dist/*
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Audit all pinned runtime and AWS dependencies
+        run: uvx pip-audit -r constraints.txt --strict --desc
+      - name: Install checksum-verified Gitleaks
+        run: |
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+      - name: Scan the tracked release files
+        run: |
+          mkdir "$RUNNER_TEMP/release-tree"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/release-tree"
+          "$RUNNER_TEMP/gitleaks" dir "$RUNNER_TEMP/release-tree" --config .gitleaks.toml --redact
+      # The current private history contains a known captured token. This gate
+      # must pass on the cleaned release repository before publication.
+      - name: Full history release gate
+        if: github.event_name == 'workflow_dispatch'
+        run: '"$RUNNER_TEMP/gitleaks" git --log-opts=--all --config .gitleaks.toml --redact .'
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build and start dependencies
+        run: |
+          docker compose build
+          docker compose up -d postgres migrate
+      - name: Refuse unauthenticated public bind
+        run: |
+          if docker compose run --rm --no-deps gateway > "$RUNNER_TEMP/bind-guard.log" 2>&1; then
+            echo "::error::gateway accepted an unauthenticated public bind"
+            exit 1
+          fi
+          grep -q 'Refusing to bind' "$RUNNER_TEMP/bind-guard.log"
+      - name: Boot with auth and exercise ingest and persistent artifacts
+        run: |
+          export WISHD_API_TOKENS="ci:$(openssl rand -hex 24)"
+          docker compose up -d --wait --wait-timeout 120
+          curl --fail --silent localhost:8080/ready
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/api/v1/runs)" = "401"
+          docker compose exec -T gateway wishd seed --url http://localhost:8080
+          docker compose exec -T gateway wishd runs --roots
+          docker compose exec -T gateway python -c "from pathlib import Path; import os; p=Path(os.environ['WISHD_ARTIFACT_DIR'])/'ci-persistence'; p.write_text('persisted')"
+          docker compose up -d --force-recreate --no-deps --wait gateway
+          docker compose exec -T gateway python -c "from pathlib import Path; import os; assert (Path(os.environ['WISHD_ARTIFACT_DIR'])/'ci-persistence').read_text() == 'persisted'"
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+      - name: Teardown
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,19 @@
+# Dependency updates, because "pinned" and "unmaintained" are the same thing
+# after a few months. The constraints file is what the image builds from, so it
+# is what has to be kept current -- an unwatched pin is how a project ships a
+# known CVE for a year.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

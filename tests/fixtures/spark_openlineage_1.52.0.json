@@ -1,0 +1,4024 @@
+[
+ {
+  "eventTime": "2026-08-08T00:51:08.101000Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "APPLICATION",
+     "processingType": "NONE"
+    }
+   },
+   "name": "dbt_spark_analytics",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "analytics_daily.dbt_run_marts",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:11.193000Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-38df-7b6a-b942-fe9579d246ad"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:11.265000Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3953-71fe-acbd-b7cf3c100656"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:11.417000Z",
+  "eventType": "RUNNING",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_jobDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "jobId": 0
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3953-71fe-acbd-b7cf3c100656"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.107000Z",
+  "eventType": "RUNNING",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {
+     "outputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-2/OutputStatisticsOutputDatasetFacet.json#/$defs/OutputStatisticsOutputDatasetFacet",
+      "fileCount": 2,
+      "rowCount": 3,
+      "size": 1994
+     }
+    }
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3953-71fe-acbd-b7cf3c100656"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.117000Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {
+     "outputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-2/OutputStatisticsOutputDatasetFacet.json#/$defs/OutputStatisticsOutputDatasetFacet",
+      "fileCount": 2,
+      "rowCount": 3,
+      "size": 1994
+     }
+    }
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3953-71fe-acbd-b7cf3c100656"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.222000Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_stg_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-38df-7b6a-b942-fe9579d246ad"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.282000Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d1e-7614-9104-f9cdaff8da36"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.296000Z",
+  "eventType": "START",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d2a-7594-9dc1-d72a94a65bd4"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.317000Z",
+  "eventType": "RUNNING",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_jobDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "jobId": 1
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d2a-7594-9dc1-d72a94a65bd4"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.425000Z",
+  "eventType": "RUNNING",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {
+     "outputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-2/OutputStatisticsOutputDatasetFacet.json#/$defs/OutputStatisticsOutputDatasetFacet",
+      "fileCount": 2,
+      "rowCount": 2,
+      "size": 1480
+     }
+    }
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d2a-7594-9dc1-d72a94a65bd4"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.432000Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_insert_into_hadoop_fs_relation_command.warehouse_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {
+     "outputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-2/OutputStatisticsOutputDatasetFacet.json#/$defs/OutputStatisticsOutputDatasetFacet",
+      "fileCount": 2,
+      "rowCount": 2,
+      "size": 1480
+     }
+    }
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d2a-7594-9dc1-d72a94a65bd4"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.471000Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_stg_customers",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3d1e-7614-9104-f9cdaff8da36"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.581000Z",
+  "eventType": "START",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.fct_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e49-75ec-b169-f74ce48eb473"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.659000Z",
+  "eventType": "START",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    },
+    "sql": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/SQLJobFacet.json#/$defs/SQLJobFacet",
+     "dialect": "spark",
+     "query": "\n    select o.order_id, o.customer_id, c.segment, o.order_total\n    from stg_orders o\n    join stg_customers c on c.customer_id = o.customer_id\n"
+    }
+   },
+   "name": "dbt_spark_analytics.adaptive_spark_plan.warehouse_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e95-7010-93a0-cc1ec91832bb"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.742000Z",
+  "eventType": "RUNNING",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    },
+    "sql": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/SQLJobFacet.json#/$defs/SQLJobFacet",
+     "dialect": "spark",
+     "query": "\n    select o.order_id, o.customer_id, c.segment, o.order_total\n    from stg_orders o\n    join stg_customers c on c.customer_id = o.customer_id\n"
+    }
+   },
+   "name": "dbt_spark_analytics.adaptive_spark_plan.warehouse_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_jobDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "jobId": 2
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e95-7010-93a0-cc1ec91832bb"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.877000Z",
+  "eventType": "RUNNING",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    },
+    "sql": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/SQLJobFacet.json#/$defs/SQLJobFacet",
+     "dialect": "spark",
+     "query": "\n    select o.order_id, o.customer_id, c.segment, o.order_total\n    from stg_orders o\n    join stg_customers c on c.customer_id = o.customer_id\n"
+    }
+   },
+   "name": "dbt_spark_analytics.adaptive_spark_plan.warehouse_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e95-7010-93a0-cc1ec91832bb"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:12.991000Z",
+  "eventType": "RUNNING",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    },
+    "sql": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/SQLJobFacet.json#/$defs/SQLJobFacet",
+     "dialect": "spark",
+     "query": "\n    select o.order_id, o.customer_id, c.segment, o.order_total\n    from stg_orders o\n    join stg_customers c on c.customer_id = o.customer_id\n"
+    }
+   },
+   "name": "dbt_spark_analytics.adaptive_spark_plan.warehouse_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_applicationDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "appName": "dbt_spark_analytics",
+     "applicationId": "local-1786150268475",
+     "deployMode": "client",
+     "driverHost": "2c68bb06a53e",
+     "master": "local[2]",
+     "uiWebUrl": "http://2c68bb06a53e:4040",
+     "userName": "spark"
+    },
+    "spark_jobDetails": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "jobId": 3
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e95-7010-93a0-cc1ec91832bb"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:13.096000Z",
+  "eventType": "COMPLETE",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    },
+    "sql": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/SQLJobFacet.json#/$defs/SQLJobFacet",
+     "dialect": "spark",
+     "query": "\n    select o.order_id, o.customer_id, c.segment, o.order_total\n    from stg_orders o\n    join stg_customers c on c.customer_id = o.customer_id\n"
+    }
+   },
+   "name": "dbt_spark_analytics.adaptive_spark_plan.warehouse_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         },
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "FILTER",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "OVERWRITE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {
+     "outputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-2/OutputStatisticsOutputDatasetFacet.json#/$defs/OutputStatisticsOutputDatasetFacet",
+      "fileCount": 2,
+      "rowCount": 3,
+      "size": 2531
+     }
+    }
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e95-7010-93a0-cc1ec91832bb"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:13.119000Z",
+  "eventType": "COMPLETE",
+  "inputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_customers",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1480
+     }
+    },
+    "name": "/tmp/warehouse/stg_customers",
+    "namespace": "file",
+    "outputFacets": {}
+   },
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.stg_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {
+     "inputStatistics": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-0/InputStatisticsInputDatasetFacet.json#/$defs/InputStatisticsInputDatasetFacet",
+      "fileCount": 2,
+      "size": 1994
+     }
+    },
+    "name": "/tmp/warehouse/stg_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "SQL_JOB",
+     "processingType": "BATCH"
+    }
+   },
+   "name": "dbt_spark_analytics.execute_create_data_source_table_as_select_command.default_fct_orders",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [
+   {
+    "facets": {
+     "catalog": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-1-0/CatalogDatasetFacet.json#/$defs/CatalogDatasetFacet",
+      "framework": "hive",
+      "name": "default",
+      "source": "spark",
+      "type": "hive",
+      "warehouseUri": "file:/tmp/warehouse"
+     },
+     "columnLineage": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ColumnLineageDatasetFacet.json#/$defs/ColumnLineageDatasetFacet",
+      "dataset": [
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_orders",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         }
+        ]
+       },
+       {
+        "field": "customer_id",
+        "name": "/tmp/warehouse/stg_customers",
+        "namespace": "file",
+        "transformations": [
+         {
+          "description": "",
+          "masking": false,
+          "subtype": "JOIN",
+          "type": "INDIRECT"
+         }
+        ]
+       }
+      ],
+      "fields": {
+       "customer_id": {
+        "inputFields": [
+         {
+          "field": "customer_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_id": {
+        "inputFields": [
+         {
+          "field": "order_id",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "order_total": {
+        "inputFields": [
+         {
+          "field": "order_total",
+          "name": "/tmp/warehouse/stg_orders",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       },
+       "segment": {
+        "inputFields": [
+         {
+          "field": "segment",
+          "name": "/tmp/warehouse/stg_customers",
+          "namespace": "file",
+          "transformations": [
+           {
+            "description": "",
+            "masking": false,
+            "subtype": "IDENTITY",
+            "type": "DIRECT"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     },
+     "dataSource": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/DatasourceDatasetFacet.json#/$defs/DatasourceDatasetFacet",
+      "name": "file",
+      "uri": "file"
+     },
+     "lifecycleStateChange": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/LifecycleStateChangeDatasetFacet.json#/$defs/LifecycleStateChangeDatasetFacet",
+      "lifecycleStateChange": "CREATE"
+     },
+     "schema": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/SchemaDatasetFacet.json#/$defs/SchemaDatasetFacet",
+      "fields": [
+       {
+        "name": "order_id",
+        "type": "integer"
+       },
+       {
+        "name": "customer_id",
+        "type": "integer"
+       },
+       {
+        "name": "segment",
+        "type": "string"
+       },
+       {
+        "name": "order_total",
+        "type": "double"
+       }
+      ]
+     },
+     "symlinks": {
+      "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+      "_schemaURL": "https://openlineage.io/spec/facets/1-0-1/SymlinksDatasetFacet.json#/$defs/SymlinksDatasetFacet",
+      "identifiers": [
+       {
+        "name": "default.fct_orders",
+        "namespace": "file:/tmp/warehouse",
+        "type": "TABLE"
+       }
+      ]
+     }
+    },
+    "inputFacets": {},
+    "name": "/tmp/warehouse/fct_orders",
+    "namespace": "file",
+    "outputFacets": {}
+   }
+  ],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "dbt_spark_analytics",
+      "namespace": "spark://local-dev"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-3e49-75ec-b169-f74ce48eb473"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ },
+ {
+  "eventTime": "2026-08-08T00:51:13.406000Z",
+  "eventType": "COMPLETE",
+  "inputs": [],
+  "job": {
+   "facets": {
+    "jobType": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/2-0-4/JobTypeJobFacet.json#/$defs/JobTypeJobFacet",
+     "integration": "SPARK",
+     "jobType": "APPLICATION",
+     "processingType": "NONE"
+    }
+   },
+   "name": "dbt_spark_analytics",
+   "namespace": "spark://local-dev"
+  },
+  "outputs": [],
+  "producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+  "run": {
+   "facets": {
+    "environment-properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "environment-properties": {}
+    },
+    "parent": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-2-0/ParentRunFacet.json#/$defs/ParentRunFacet",
+     "job": {
+      "name": "analytics_daily.dbt_run_marts",
+      "namespace": "prod-airflow"
+     },
+     "root": {
+      "job": {
+       "name": "analytics_daily.dbt_run_marts",
+       "namespace": "prod-airflow"
+      },
+      "run": {
+       "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+      }
+     },
+     "run": {
+      "runId": "019fd9f2-dd00-7634-a0db-6d0e76160446"
+     }
+    },
+    "processing_engine": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/facets/1-1-1/ProcessingEngineRunFacet.json#/$defs/ProcessingEngineRunFacet",
+     "name": "spark",
+     "openlineageAdapterVersion": "1.52.0",
+     "version": "3.5.7"
+    },
+    "spark_properties": {
+     "_producer": "https://github.com/OpenLineage/OpenLineage/tree/1.52.0/integration/spark",
+     "_schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunFacet",
+     "properties": {
+      "spark.app.name": "dbt_spark_analytics",
+      "spark.master": "local[2]"
+     }
+    }
+   },
+   "runId": "019fdeda-303d-7261-9376-34a4d4b28687"
+  },
+  "schemaURL": "https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/RunEvent"
+ }
+]

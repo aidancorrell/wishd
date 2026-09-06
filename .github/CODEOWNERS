@@ -1,0 +1,3 @@
+# Every change needs review from the owner. Branch protection on `main` enforces
+# this: it is the mechanism, and this file is the assignment.
+* @aidancorrell

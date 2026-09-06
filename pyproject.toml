@@ -1,0 +1,107 @@
+[project]
+name = "wishd"
+version = "1.0.0rc1"
+description = "wish:d (what is happening:data). Open-source data observability for teams that run their own compute."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "psycopg[binary,pool]>=3.2",
+    "typer>=0.15",
+    "rich>=13.9",
+    "httpx>=0.28",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.20",
+    # Monitors are declared in YAML in the user's repo, next to the dbt project
+    # they protect (Phase 03). dbt already puts PyYAML in every one of these
+    # environments, so this costs the install story nothing.
+    "pyyaml>=6.0",
+    # Column lineage for producers that send SQL but no columnLineage facet
+    # (Phase 04, ADR-007). Pure Python with no dependencies of its own, so it
+    # costs the install story nothing.
+    "sqlglot>=25.0",
+]
+
+[project.optional-dependencies]
+# S3: artifact storage, and reading Spark event logs where EMR writes them.
+# Deliberately an extra rather than a dependency — ADR-001's install story again.
+# A local install should not need an AWS SDK to evaluate a freshness monitor,
+# and both call sites import boto3 lazily so it is only ever loaded if used.
+aws = [
+    "boto3>=1.34",
+]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pgserver>=0.1.4",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "boto3>=1.34",
+]
+
+[project.scripts]
+wishd = "dataspine.cli:main"
+dataspine = "dataspine.cli:main"
+
+[project.urls]
+Repository = "https://github.com/aidancorrell/wishd"
+Issues = "https://github.com/aidancorrell/wishd/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dataspine"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"migrations" = "dataspine/migrations"
+"THIRD_PARTY_NOTICES.md" = "dataspine/THIRD_PARTY_NOTICES.md"
+
+[tool.hatch.build.targets.sdist]
+# An explicit root allowlist avoids .gitignore negations (such as .env.example)
+# admitting files from ignored local worktrees or capture directories.
+include = [
+    "/src",
+    "/migrations",
+    "/pyproject.toml",
+    "/README.md",
+    "/LICENSE",
+    "/THIRD_PARTY_NOTICES.md",
+    "/constraints.txt",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+# Load tests are excluded by default: they take seconds, not milliseconds, and a
+# slow suite is a suite people stop running. Run them with `pytest -m load`.
+addopts = "-m 'not load and not scale and not aws'"
+markers = [
+    "load: performance floors and query-plan guards (slow; run explicitly)",
+    # Separate from `load` because it generates a million rows and takes
+    # minutes, not seconds. A suite people stop running catches nothing.
+    "scale: read-side latency at 10^6 runs (very slow; run explicitly)",
+    # Needs a real AWS account and DATASPINE_TEST_S3_BUCKET. Excluded by
+    # default so the suite stays runnable with no cloud credentials at all.
+    "aws: validates against real AWS (run explicitly; costs a few cents at most)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer declares CLI options as function-call defaults. That is the framework's
+# documented API, not the mutable-default bug B008 is warning about.
+"src/dataspine/cli.py" = ["B008"]
+# Same for FastAPI: File()/Query() in defaults is the framework's documented
+# API, not the mutable-default bug B008 warns about.
+"src/dataspine/api.py" = ["B008"]

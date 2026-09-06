@@ -1,0 +1,65 @@
+name: wish:d downstream impact
+description: Comment on a dbt PR with the downstream blast radius of changed models.
+
+inputs:
+  gateway-url:
+    description: Base URL of the wish:d gateway.
+    required: true
+  token:
+    description: wish:d API token.
+    required: false
+  depth:
+    description: How many hops downstream to report (1–20).
+    required: false
+    default: "5"
+  base-ref:
+    description: Origin branch to diff against, optionally prefixed with origin/.
+    required: false
+    default: origin/main
+
+runs:
+  using: composite
+  steps:
+    - name: Work out which models changed
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref }}
+      run: |
+        set -euo pipefail
+        base_branch="${BASE_REF#origin/}"
+        git check-ref-format "refs/heads/$base_branch"
+        git fetch --no-tags origin "refs/heads/$base_branch:refs/remotes/origin/$base_branch"
+        work_dir=$(mktemp -d "$RUNNER_TEMP/wishd-impact.XXXXXX")
+        echo "WISHD_IMPACT_DIR=$work_dir" >> "$GITHUB_ENV"
+        git diff --name-only "refs/remotes/origin/$base_branch...HEAD" -- > "$work_dir/changed.txt"
+
+    - name: Ask wish:d for the blast radius
+      shell: bash
+      env:
+        WISHD_URL: ${{ inputs.gateway-url }}
+        WISHD_TOKEN: ${{ inputs.token }}
+        DEPTH: ${{ inputs.depth }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        python "$ACTION_PATH/impact.py" < "$WISHD_IMPACT_DIR/changed.txt" > "$WISHD_IMPACT_DIR/comment.md"
+
+    - name: Comment, or update the existing wish:d comment
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        if [ ! -s "$WISHD_IMPACT_DIR/comment.md" ]; then
+          exit 0
+        fi
+        # Restrict both the marker and author. Never edit an unrelated last comment.
+        existing=$(gh pr view "$PR_NUMBER" --json comments \
+          --jq '[.comments[] | select(.author.login == "github-actions" or .author.login == "github-actions[bot]") | select(.body | startswith("### wish:d")) | .id] | first // empty')
+        if [ -n "$existing" ]; then
+          gh api graphql -f query='mutation($id: ID!, $body: String!) { updateIssueComment(input: {id: $id, body: $body}) { issueComment { id } } }' \
+            -f id="$existing" -F body=@"$WISHD_IMPACT_DIR/comment.md" > /dev/null
+        else
+          gh pr comment "$PR_NUMBER" --body-file "$WISHD_IMPACT_DIR/comment.md"
+        fi

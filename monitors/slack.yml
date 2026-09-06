@@ -1,0 +1,122 @@
+# Slack routing.
+#
+# Point dataspine at this file and it decides which channel each notification
+# belongs in:
+#
+#     export DATASPINE_SLACK_ROUTES=monitors/slack.yml
+#
+# Credentials do not live here. This file is meant to be committed — "why does
+# finance get paged for this?" is a question that deserves a diff — and a bot
+# token is a secret, so it stays in the environment:
+#
+#     export DATASPINE_SLACK_BOT_TOKEN=xoxb-...     # a Slack app with chat:write
+#     export DATASPINE_BASE_URL=https://dataspine.internal   # so alerts link back
+#
+# Invite the bot to every channel named below (`/invite @dataspine`), or Slack
+# answers `not_in_channel` — which `dataspine slack-check --send` will show you.
+#
+# Routes are read top-down and THE FIRST MATCH WINS. Put the specific ones first
+# and the catch-all last; a catch-all at the top swallows everything below it.
+#
+# Match on any of:
+#   event        pipeline | monitor | run_failure | incident | digest |
+#                data_test | dbt_job
+#   status       breach | ok | error (monitor)   failed (run_failure)
+#                open (incident)     ok | attention (digest)
+#   monitor      the monitor's name — globs allowed
+#   job          the pipeline's name — globs allowed
+#   dataset      the table a check asserted on — globs allowed
+#   integration  which producers reported a failure: AIRFLOW | DBT | SPARK
+#
+# An unstated key matches anything. A stated key never matches a notification
+# that has no such value, so `job: "*"` will not catch monitor breaches and
+# `integration: "*"` will not catch anything but a run failure.
+#
+#     dataspine slack-check          # what is configured, and what each route catches
+#     dataspine slack-check --send   # post a test message to every channel
+#
+# ---------------------------------------------------------------------------
+# The default shape below is two streams, because the two questions have
+# different audiences and different urgencies:
+#
+#   Is the machinery running?   Failed pipelines and the daily summary. Read by
+#                               whoever is on call for the platform.
+#   Is the data right?          dbt jobs that failed (one message, with each
+#                               model and test failure as a thread reply),
+#                               monitor breaches and incidents. Read by whoever
+#                               owns the tables.
+#
+# `dbt_job` is one message per dbt invocation, so a team running several jobs
+# against one project can route them apart on the job name:
+#
+#   - match: {event: dbt_job, job: "*Finance*"}
+#     channel: "#finance-data"
+#
+# Worth knowing before you split on `integration` instead: on a dbt-on-Spark
+# stack essentially every failure reports AIRFLOW, DBT *and* SPARK, because that
+# is the real shape of the tree. `integration` separates a hand-written Spark job
+# from an orchestration failure; it does not separate "a dbt model broke" from
+# "the pipeline broke", because those are the same event.
+
+routes:
+  # ------------------------------------------------------- data alerts stream
+  # Something is wrong with the data itself: a table is stale, a row count
+  # collapsed, a column changed type, or several of those turned out to be one
+  # incident with one cause.
+  - match:
+      event: [dbt_job, monitor, data_test]
+    channel: "#data-alerts"
+
+  # ---------------------------------------------------------- pipeline stream
+  # A live feed of what is running, plus the summary that makes the quiet days
+  # readable. `pipeline` is one message per execution, edited in place as it
+  # runs — see `dataspine track`, which needs a bot token because an incoming
+  # webhook cannot edit anything.
+  - match:
+      event: [pipeline, digest]
+    channel: "#data-pipelines"
+
+  # `run_failure` is deliberately absent above. With the live feed running it is
+  # duplicate news: the pipeline's own message already turned red. Keep it for a
+  # channel that should get *only* failures, and page from there.
+  # - match: {event: run_failure}
+  #   channel: "#data-oncall"
+
+  # `incident` is deliberately absent for the same reason, and it is the less
+  # obvious of the two. An incident is a *grouping* of monitor breaches, not a
+  # new fact: `incidents.suppress` drops the consequences but never the cause,
+  # so the cause monitor has already alerted on its own. Routing incidents here
+  # as well announces the same breach twice, and an incident whose blast radius
+  # is 0 monitors — the common case — is a group of one that says nothing the
+  # monitor did not.
+  #
+  # They are still detected and still persisted either way, so `/incidents` in
+  # the UI stays complete. This only decides whether Slack hears about them.
+  # Route them somewhere if you want the grouped view pushed rather than pulled:
+  # - match: {event: incident}
+  #   channel: "#data-oncall"
+
+  # ------------------------------------------------------------- per-team cut
+  # A team that owns its tables wants everything about them in one place, not
+  # only the half that happens to be a monitor. Move these ABOVE the two streams
+  # above to make them win — first match wins, and these are last here because
+  # the two-stream split is the default this file is demonstrating.
+  # - match: {monitor: "finance_*"}
+  #   channel: "#finance-data"
+  # - match: {job: "finance_*"}
+  #   channel: "#finance-data"
+  # - match: {dataset: "*.finance_*"}
+  #   channel: "#finance-data"
+
+  # There is deliberately no catch-all, and that is load-bearing rather than an
+  # omission. A catch-all is the last rule, so it collects exactly the events
+  # left out above — which here are the two left out *on purpose*, `incident`
+  # and `run_failure`. Adding one back silently undoes both exclusions while
+  # looking like a harmless safety net.
+  #
+  # What it buys, and what it costs: with a catch-all, a new event type in a
+  # future version lands somewhere noisy; without one, it routes nowhere until
+  # someone names it. `dataspine slack-check` prints what each route catches, so
+  # the second failure is visible rather than silent. If you would rather have
+  # the noise, put this last and accept that it re-enables the two above:
+  # - channel: "#data-alerts"

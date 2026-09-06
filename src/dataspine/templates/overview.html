@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, state_dot %}
+{% from "_run_row.html" import run_row %}
+{% set active = 'overview' %}
+{% block title %}Now · wish:d{% endblock %}
+
+{#
+  The bird's eye view.
+
+  **The concurrency band leads the page.** The most characteristic fact in this
+  product's world is that pipelines overlap on compute somebody else is also
+  using -- it is the whole premise -- and the run list structurally cannot show
+  it, being ordered by start time so concurrent work interleaves instead of
+  stacking. Opening on six stat tiles instead would be the layout any dashboard
+  gets by default; the counts are real but they are supporting evidence, so they
+  ride in one line above the band rather than taking a block of their own.
+
+  Everything expands in place via native `<details>` (ADR-002). No JavaScript.
+#}
+
+{% macro expansion(run_id, tree) %}
+  <div class="drop">
+    {% if tree %}
+      <div class="rr-list">
+        {% for run in tree %}{{ run_row(run) }}{% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Steps aren't loaded inline this far back.</p>
+    {% endif %}
+    <a class="drop-more" href="/runs/{{ run_id }}">Full detail, SQL and metrics →</a>
+  </div>
+{% endmacro %}
+
+{% block eyebrow %}
+  <span class="eyebrow">{{ now.strftime('%A, %-d %B · %H:%M') }}</span>
+{% endblock %}
+{% block heading %}What is running now{% endblock %}
+{% block note %}
+<p class="page-note">
+  Pipelines overlap on compute somebody else is also using. The band shows that
+  overlap; the run list structurally cannot.
+</p>
+{% endblock %}
+
+{# The counts sit beside the title rather than in a row of stat tiles. They are
+   supporting evidence for the band, not the headline. #}
+{% block head_aside %}
+<p class="now-counts">
+  <span class="{% if board %}is-live{% else %}muted{% endif %}">
+    <span class="n">{{ board|length }}</span><span class="l">live</span>
+  </span>
+  {% if stale %}<span class="is-crit"><span class="n">{{ stale|length }}</span><span class="l">gone quiet</span></span>{% endif %}
+  {% if late_count %}<span class="is-warn"><span class="n">{{ late_count }}</span><span class="l">slow</span></span>{% endif %}
+  {% if breaching %}<span class="is-crit"><span class="n">{{ breaching|length }}</span><span class="l">breaching</span></span>{% endif %}
+  {% if health.unstitched_runs %}
+    <span class="is-crit"><span class="n">{{ health.unstitched_runs }}</span><span class="l">unstitched</span></span>
+  {% endif %}
+</p>
+{% endblock %}
+
+{% block content %}
+
+{# --------------------------------------------------------------- the band #}
+
+<section class="band">
+  <header class="band-head">
+    <span class="eyebrow">Concurrency</span>
+    {% if peak.peak %}
+      <span class="band-peak">
+        peak <strong>{{ peak.peak }}</strong> at {{ peak.at.strftime('%H:%M') }}
+      </span>
+    {% endif %}
+    <nav class="window-picker">
+      {% for w in windows %}
+        <a href="/overview?window={{ w }}" {% if w == window %}class="on"{% endif %}>{{ w }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+
+  {% if lanes %}
+  <div class="band-body">
+    <div class="tl-axis">
+      <span>{{ since.strftime('%b %d %H:%M') }}</span>
+      <span>now</span>
+    </div>
+    {% for lane in lanes %}
+    <details class="tl-lane">
+      <summary>
+        <span class="tl-name" title="{{ lane.job_name }}">{{ lane.job_name }}</span>
+        {# Spans, not links: a link inside a <summary> is both a navigation and
+           a toggle. The links live in the expanded panel. #}
+        <span class="tl-track">
+          {% for bar in lane.bars %}
+          <span class="tl-bar s-{{ (bar.state or 'unknown')|lower }}{% if bar.live %} is-live{% endif %}{% if bar.clipped %} is-clipped{% endif %}"
+                style="left: {{ bar.left }}%; width: {{ bar.width }}%"
+                title="{{ lane.job_name }} · {{ bar.state }} · {{ bar.started_at.strftime('%b %d %H:%M') }}{% if bar.duration_ms %} · {{ bar.duration_ms|duration }}{% endif %}{% if bar.clipped %} · started before this window{% endif %}"></span>
+          {% endfor %}
+        </span>
+        <span class="tl-count">{{ lane.bars|length }}</span>
+      </summary>
+
+      <div class="tl-detail">
+        {% for bar in lane.bars|reverse %}
+        <details class="tl-exec"{% if bar.state == 'FAILED' %} open{% endif %}>
+          <summary>
+            {{ state_dot(bar.state) }}
+            <span class="tl-exec-when">{{ bar.started_at.strftime('%b %d %H:%M') }}</span>
+            <span class="muted">{{ bar.duration_ms|duration }}</span>
+            {% if bar.live %}<span class="tag tag-live">live</span>{% endif %}
+            {% if bar.clipped %}<span class="muted">started earlier</span>{% endif %}
+          </summary>
+          {{ expansion(bar.run_id, bar.tree) }}
+        </details>
+        {% endfor %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty"><p>No executions in this window.</p></div>
+  {% endif %}
+</section>
+
+{# ------------------------------------------------------------ two columns #}
+
+<div class="cols">
+
+  <section class="col-main">
+    <h2 class="section-title">In flight</h2>
+    {% if board %}
+    <ul class="board">
+      {% for p in board %}
+      <li>
+        <details class="board-row{% if p.slow %} is-slow{% endif %}{% if p.failed %} is-failed{% endif %}"
+                 {% if p.failed %}open{% endif %}>
+          {#
+            One grid, so every number sits in a column you can read down. The
+            cells are emitted whether or not they have content -- an empty cell
+            keeps the column, and a column that moves per row is the thing this
+            replaces.
+          #}
+          <summary>
+            {{ state_dot(p.state) }}
+            <span class="c-job">{{ p.job_name }}</span>
+            <span class="c-steps">{{ p.done }}/{{ p.total }}</span>
+            <span class="c-bar">
+              <span class="bar" role="img"
+                    aria-label="{{ p.done }} of {{ p.total }} steps finished">
+                <span class="bar-fill" style="width: {{ p.percent }}%"></span>
+              </span>
+            </span>
+            <span class="c-el">{{ p.elapsed_ms|duration }}</span>
+            <span class="c-med">{% if p.baseline_ms %}~{{ p.baseline_ms|duration }}{% endif %}</span>
+            <span class="c-infra">
+              {%- for infra in p.infra %}
+                <span class="board-infra" title="running on {{ infra.label }}{% if infra.detail %} ({{ infra.detail }}){% endif %}">
+                  {{ icon(infra.key) }}{{ infra.detail or infra.label }}
+                </span>
+              {%- endfor %}
+            </span>
+            <span class="c-flags">
+              {% if p.failed %}<span class="flag crit">{{ p.failed }} failed</span>{% endif %}
+              {% if p.slow %}<span class="flag warn">{{ '%.1f'|format(p.slow_factor) }}×</span>{% endif %}
+            </span>
+          </summary>
+          {{ expansion(p.run_id, p.tree) }}
+        </details>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      <div class="empty"><p>Nothing running.</p></div>
+    {% endif %}
+  </section>
+
+  <aside class="col-side">
+    <h2 class="section-title">Needs attention</h2>
+
+    {% if breaching %}
+    <div class="att att-crit">
+      <span class="eyebrow">Breaching</span>
+      <ul class="att-list">
+        {% for m in breaching %}
+        <li>
+          <a href="/monitors/{{ m.name }}">{{ m.name }}</a>
+          <span class="att-why">{{ m.message or '—' }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if stale %}
+    <div class="att att-crit">
+      <span class="eyebrow"
+            title="OpenLineage has no heartbeat. A producer speaks when work starts and when it ends, so a cluster that dies in between leaves its runs RUNNING forever. Silence is the only evidence available, and these are held out of the live count.">
+        Gone quiet
+      </span>
+      <ul class="att-list">
+        {% for p in stale[:5] %}
+        <li>
+          <a href="/runs/{{ p.run_id }}">{{ p.job_name }}</a>
+          <span class="att-why">silent {{ p.silent_ms|duration }} · {{ p.done }}/{{ p.total }} done</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if stale|length > 5 %}
+        <p class="att-more">{{ stale|length - 5 }} more quiet</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if infra_load %}
+    <div class="att">
+      <span class="eyebrow">Infrastructure</span>
+      <ul class="att-list">
+        {% for entry in infra_load %}
+        <li>
+          <span class="board-infra">
+            {{ icon(entry.platform.key) }}{{ entry.platform.detail or entry.platform.label }}
+          </span>
+          <span class="att-why {% if entry.count > 1 %}is-warn{% endif %}">
+            {{ entry.count }} pipeline{{ '' if entry.count == 1 else 's' }}
+            {%- if entry.count > 1 %} contending{% endif %}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if not breaching and not stale and not infra_load %}
+      <div class="empty"><p>Nothing to look at.</p></div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

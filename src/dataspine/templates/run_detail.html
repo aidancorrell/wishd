@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% set active = 'runs' %}
+{% block title %}{{ run.job_name }} · wish:d{% endblock %}
+
+{% macro tree_node(node, current) %}
+  {% set r = node.run %}
+  <li>
+    <div class="node {% if r.run_id|string == current %}current{% endif %}">
+      <span class="state-dot {{ r.state|lower }}" title="{{ r.state }}"></span>
+      <a class="node-name" href="/runs/{{ r.run_id }}">{{ r.job_name }}</a>
+      <span class="intg">{{ r.integration or '—' }}</span>
+      <span class="dur">{{ r.duration_ms|duration }}</span>
+      {% if r.is_placeholder %}
+        <span class="warn" title="Referenced as a parent, but no producer ever sent events for it">
+          no events received
+        </span>
+      {% endif %}
+    </div>
+    {% if r.error_message %}
+      <div class="node-error">{{ r.error_message.splitlines()[0] }}</div>
+    {% endif %}
+    {% if node.children %}
+      <ul>
+        {% for child in node.children %}{{ tree_node(child, current) }}{% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block eyebrow %}
+  <span class="eyebrow">Runs · {{ run.job_namespace }} · {{ run.state }}</span>
+{% endblock %}
+{% block heading %}{{ run.job_name }}{% endblock %}
+{% block note %}
+{# The identifying line is mono because every token in it is an identifier
+   somebody may need to paste into another system. #}
+<p class="page-note mono">
+  {{ run.job_namespace }} · {{ run.integration or 'unknown' }}{% if run.job_type %} · {{ run.job_type }}{% endif %} · run {{ run.run_id }}
+</p>
+{% endblock %}
+{% block head_aside %}
+  <span class="state {{ run.state|lower }}">{{ run.state }}</span>
+{% endblock %}
+
+{% block content %}
+
+<header class="run-head">
+  <dl class="facts">
+    <div><dt>Duration</dt><dd>{{ run.duration_ms|duration }}</dd></div>
+    <div><dt>Started</dt><dd>{{ run.started_at.strftime('%b %d %H:%M:%S') if run.started_at else '—' }}</dd></div>
+    <div><dt>Ended</dt><dd>{{ run.ended_at.strftime('%b %d %H:%M:%S') if run.ended_at else '—' }}</dd></div>
+    {% if timing.queue_delay_seconds is not none %}
+    {# Queue delay and run duration answer different questions: waiting for a
+       slot and running slowly have completely different fixes. #}
+    <div><dt>Queued</dt><dd>{{ humanize(timing.queue_delay_seconds) }}</dd></div>
+    {% endif %}
+    {% if timing.lateness_seconds is not none %}
+    <div><dt>Late by</dt><dd class="late">{{ humanize(timing.lateness_seconds) }}</dd></div>
+    {% endif %}
+    <div><dt>Events</dt><dd>{{ run.event_count }}</dd></div>
+  </dl>
+</header>
+
+{% if run_links %}
+{# Deep links sit directly under the header: wish:d does not hold the stage
+   breakdown or the task log, so getting people to the system that does is part
+   of the job, not an afterthought at the bottom of the page. #}
+<div class="links">
+  {% for item in run_links %}
+    {% if item.url %}
+      <a class="link-chip" href="{{ item.url }}" target="_blank" rel="noopener noreferrer">
+        {{ item.label }} ↗
+      </a>
+    {% else %}
+      <span class="link-chip ref"><b>{{ item.label }}</b> {{ item.value }}</span>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if run.error_message %}
+{# The error goes first. On a failed run this is the entire reason the page was
+   opened, and burying it under a tree would be a UX joke. #}
+<section class="panel error">
+  <h2>Failure</h2>
+  <pre class="err-msg">{{ run.error_message }}</pre>
+  {% if run.error_stacktrace %}
+  <details>
+    <summary>Stack trace</summary>
+    <pre class="trace">{{ run.error_stacktrace }}</pre>
+  </details>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Pipeline</h2>
+  <p class="panel-note">
+    The whole execution this run belongs to, from the top-level trigger down.
+    Current run highlighted.
+  </p>
+  {% if tree %}
+  <ul class="tree">{{ tree_node(tree, current_run_id) }}</ul>
+  {% else %}
+  <p class="muted">No tree available.</p>
+  {% endif %}
+</section>
+
+{% if sql and sql.query %}
+<section class="panel">
+  <h2>SQL</h2>
+  {% if sql.hops %}
+  {# Never present a parent's query as this run's. #}
+  <p class="panel-note">
+    This run reported no SQL of its own. Showing the query from
+    <strong>{{ sql.job_name }}</strong>, {{ sql.hops }} level{{ 's' if sql.hops > 1 }} up.
+  </p>
+  {% endif %}
+  <pre class="sql">{{ sql.query }}</pre>
+</section>
+{% endif %}
+
+<div class="cols">
+  <section class="panel">
+    <h2>Datasets</h2>
+    {% if own_datasets %}
+    <table class="mini">
+      <tbody>
+        {% for d in own_datasets %}
+        <tr>
+          <td><span class="dir {{ d.direction|lower }}">{{ d.direction|lower }}</span></td>
+          <td class="ds">{{ d.namespace }}/{{ d.name }}</td>
+          <td class="num">{{ d.row_count|rows }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">This run reported no dataset I/O.</p>
+    {% endif %}
+
+    {% if tree_datasets %}
+    <h3>Across the whole pipeline</h3>
+    <table class="mini">
+      <tbody>
+        {% for d in tree_datasets %}
+        <tr>
+          <td><span class="dir {{ d.direction|lower }}">{{ d.direction|lower }}</span></td>
+          <td class="ds">{{ d.namespace }}/{{ d.name }}</td>
+          <td class="num">{{ d.row_count|rows }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>History</h2>
+    <p class="panel-note">Recent runs of this same job.</p>
+    {% if history %}
+    <table class="mini">
+      <thead>
+        <tr><th>When</th><th>State</th><th class="num">Duration</th><th class="num">Rows out</th></tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr {% if h.run_id|string == current_run_id %}class="current-row"{% endif %}>
+          <td><a href="/runs/{{ h.run_id }}">{{ h.started_at.strftime('%b %d %H:%M') if h.started_at else '—' }}</a></td>
+          <td><span class="state {{ h.state|lower }}">{{ h.state }}</span></td>
+          <td class="num">{{ h.duration_ms|duration }}</td>
+          <td class="num">{{ h.output_rows|rows }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No previous runs.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% if spark %}
+<section class="panel">
+  <h2>Spark metrics</h2>
+  <p class="panel-note">
+    From the application's event log, joined to this run on the Spark
+    application id. {% if spark.metrics.truncated %}
+    <strong>Log was truncated</strong> — the application likely died without a
+    clean shutdown, so these totals are partial.{% endif %}
+  </p>
+  <div class="metrics">
+    <div class="metric"><span class="k">Tasks</span><span class="v">{{ spark.metrics.task_count }}</span></div>
+    <div class="metric {% if spark.metrics.failed_task_count %}bad{% endif %}">
+      <span class="k">Failed</span><span class="v">{{ spark.metrics.failed_task_count }}</span></div>
+    <div class="metric"><span class="k">Executors</span><span class="v">{{ spark.metrics.executor_count }}</span></div>
+    <div class="metric"><span class="k">Cores</span><span class="v">{{ spark.metrics.total_cores }}</span></div>
+    <div class="metric"><span class="k">Input</span><span class="v">{{ spark.metrics.input_bytes|filesize }}</span></div>
+    <div class="metric"><span class="k">Shuffle w</span><span class="v">{{ spark.metrics.shuffle_write_bytes|filesize }}</span></div>
+    <div class="metric {% if spark.metrics.disk_spilled_bytes %}bad{% endif %}">
+      <span class="k">Spill</span><span class="v">{{ (spark.metrics.memory_spilled_bytes + spark.metrics.disk_spilled_bytes)|filesize }}</span></div>
+    <div class="metric"><span class="k">GC</span><span class="v">{{ spark.metrics.gc_time_ms }}ms</span></div>
+  </div>
+
+  {% if findings %}
+  <h3>Findings</h3>
+  <ul class="findings">
+    {% for f in findings %}
+    <li class="finding {{ f.severity }}">
+      <span class="sev">{{ f.severity }}</span>
+      <div>
+        <b>{{ f.title }}</b>
+        <p>{{ f.detail }}</p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if spark.metrics.stages %}
+  <h3>Stages</h3>
+  <div class="table-scroll">
+  <table class="mini">
+    <thead>
+      <tr><th>Stage</th><th class="num">Tasks</th><th class="num">Duration</th>
+          <th class="num">Skew</th><th class="num">Shuffle w</th><th class="num">Spill</th></tr>
+    </thead>
+    <tbody>
+      {% for st in spark.metrics.stages %}
+      <tr>
+        <td class="ds">{{ st.stage_id }} · {{ st.name[:52] }}</td>
+        <td class="num">{{ st.task_count }}</td>
+        <td class="num">{{ st.duration_ms|duration }}</td>
+        <td class="num {% if st.skew_ratio and st.skew_ratio > 5 %}bad-num{% endif %}">
+          {{ "%.1fx"|format(st.skew_ratio) if st.skew_ratio else "–" }}</td>
+        <td class="num">{{ st.shuffle_write_bytes|filesize }}</td>
+        <td class="num">{{ (st.memory_spilled_bytes + st.disk_spilled_bytes)|filesize }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if artifacts %}
+<section class="panel">
+  <h2>Artifacts</h2>
+  <p class="panel-note">
+    Captured from the run, so they survive the node that produced them.
+  </p>
+  <table class="mini">
+    <tbody>
+      {% for a in artifacts %}
+      <tr>
+        <td class="ds">
+          <a href="/api/v1/runs/{{ run.run_id }}/artifacts/{{ a.name }}">{{ a.name }}</a>
+        </td>
+        <td class="num">{{ a.size_bytes|filesize }}</td>
+        <td class="mono muted">{{ a.sha256[:12] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% if run_facets %}
+<section class="panel">
+  <details>
+    <summary>Raw run facets ({{ run_facets|length }})</summary>
+    <ul class="facets">
+      {% for key in run_facets|sort %}<li class="mono">{{ key }}</li>{% endfor %}
+    </ul>
+  </details>
+</section>
+{% endif %}
+
+{% endblock %}

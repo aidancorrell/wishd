@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set active = 'jobs' %}
+{% block title %}Jobs · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Data</span>{% endblock %}
+{% block heading %}Jobs{% endblock %}
+{% block note %}
+<p class="page-note">
+  Every job we have seen an event for — an honest inventory of what runs, and
+  the one place a job that has stopped appearing is still visible.
+</p>
+{% endblock %}
+
+{% block content %}
+
+{% if jobs %}
+<table class="runs">
+  <thead>
+    <tr>
+      <th>Job</th><th>Integration</th><th>Type</th>
+      <th>Last state</th><th class="num">Runs</th><th class="num">Failed</th><th>Last run</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for j in jobs %}
+    <tr>
+      <td class="job">
+        {{ j.name }}
+        <span class="ns">{{ j.namespace }}</span>
+      </td>
+      <td><span class="intg">{{ j.integration or '—' }}</span></td>
+      <td class="muted">{{ j.job_type or '—' }}</td>
+      <td>
+        {% if j.last_state %}<span class="state {{ j.last_state|lower }}">{{ j.last_state }}</span>
+        {% else %}<span class="muted">—</span>{% endif %}
+      </td>
+      <td class="num">{{ j.run_count }}</td>
+      <td class="num {% if j.failed_count %}bad-num{% endif %}">{{ j.failed_count }}</td>
+      <td class="when">{{ j.last_run_at.strftime('%b %d %H:%M') if j.last_run_at else '—' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty"><p>No jobs yet.</p></div>
+{% endif %}
+{% endblock %}

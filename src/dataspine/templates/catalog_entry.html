@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% set active = 'catalog' %}
+{% block title %}{{ entry.name }} · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Data · dataset</span>{% endblock %}
+{% block heading %}{{ entry.name }}{% endblock %}
+{% block note %}
+<p class="page-note">
+  {{ entry.description or 'No description — add one under `datasets:` in your monitor YAML.' }}
+</p>
+{% endblock %}
+{% block head_aside %}
+  <a class="button" href="/lineage/{{ entry.id }}">View lineage →</a>
+{% endblock %}
+
+{% block content %}
+
+<section>
+  <h2 class="section-title">Facts</h2>
+  <ul class="plain-list">
+    <li>Owner: {{ entry.owner or '—' }}</li>
+    <li>Tags: {{ entry.tags | join(', ') if entry.tags else '—' }}</li>
+    <li>Upstream tables: {{ entry.upstream_count }} · Downstream: {{ entry.downstream_count }}</li>
+    <li>Last written:
+      {{ entry.last_written_at.strftime('%b %d %H:%M') if entry.last_written_at else '—' }}</li>
+  </ul>
+</section>
+
+{# Three names for one table looks like concealment unless it is shown. #}
+<section>
+  <h2 class="section-title">Known as</h2>
+  <ul class="plain-list">
+    {% for i in entry.identities %}
+    <li class="mono">{{ i.name }} <span class="ns">{{ i.namespace }} · {{ i.match_reason }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if candidates %}
+<section>
+  <h2 class="section-title">Same name, not merged</h2>
+  <p class="muted">
+    These share this table's name but nothing has ever written them in the same
+    pipeline run, so they are treated as different tables. Monitors match on name
+    and will include them; lineage does not. If they really are this table, the
+    evidence is missing rather than the resolver being wrong.
+  </p>
+  <ul class="plain-list">
+    {% for c in candidates %}
+    <li class="mono">
+      <a href="/catalog/{{ c.entity_id }}">{{ c.name }}</a>
+      <span class="ns">{{ c.namespace }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section>
+  <h2 class="section-title">Produced by</h2>
+  {% if entry.produced_by %}
+  <ul class="plain-list">
+    {% for j in entry.produced_by %}
+    <li class="mono">{{ j.name }} <span class="intg">{{ j.integration or '?' }}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Nothing we have seen writes this — it is a source table.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2 class="section-title">Monitors</h2>
+  {% if entry.monitors %}
+  <table class="runs">
+    <thead><tr><th>Monitor</th><th>Kind</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for m in entry.monitors %}
+      <tr>
+        <td><a href="/monitors/{{ m.name }}">{{ m.name }}</a></td>
+        <td class="muted">{{ m.kind }}</td>
+        <td><span class="status {{ m.last_status or 'none' }}">{{ m.last_status or '—' }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Nothing is watching this table.</p>
+  {% endif %}
+</section>
+
+{% if columns %}
+<section>
+  <h2 class="section-title">Column lineage</h2>
+  <table class="runs">
+    <thead><tr><th>Column</th><th>Comes from</th><th>Transformation</th><th>Source</th></tr></thead>
+    <tbody>
+      {% for c in columns %}
+      <tr>
+        <td class="mono">{{ c.downstream_column }}</td>
+        <td class="mono">{{ c.upstream_name }}.{{ c.upstream_column }}</td>
+        <td class="muted">
+          {{ c.transformation_type or '—' }}{% if c.transformation_subtype %}
+          / {{ c.transformation_subtype }}{% endif %}
+          {% if c.masking %}<span class="label anomaly">masked</span>{% endif %}
+        </td>
+        {# facet vs sql is not decoration: one came from a resolved logical plan,
+           the other from parsing text. A reader deciding whether to act on an
+           edge needs to know which. #}
+        <td><span class="intg">{{ c.source }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

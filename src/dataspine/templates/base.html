@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"{% if theme %} data-theme="{{ theme }}"{% endif %}>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}wish:d{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  {# Percent-encoded: raw angle brackets in an href are parsed inconsistently and
+     there is no reason to gamble on it for a favicon. #}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20y='13'%20font-size='13'%3E%F0%9F%A7%AC%3C/text%3E%3C/svg%3E">
+</head>
+{% from "_icons.html" import sprite, icon %}
+<body>
+  {{ sprite() }}
+
+  {#
+    Navigation is a left rail in three groups, not a strip of seven links.
+
+    The grouping is the part worth keeping: **Operate** is what is happening now,
+    **Data** is what exists, **Govern** is what it costs and whether it is right.
+    Seven peers in a horizontal bar can hold the destinations but cannot hold
+    that structure, and someone arriving at this tool for the first time learns
+    more from the three labels than from the seven.
+  #}
+  <div class="shell{% if not chrome %} shell-bare{% endif %}">
+  {% if chrome %}
+  <aside class="rail">
+    <a class="brand" href="/">wish:d</a>
+
+    <nav>
+      {% set groups = [
+        ('Operate', [
+          ('overview', '/overview', 'Now',       'now',       none),
+          ('runs',     '/',         'Runs',      'runs',      none),
+          ('incidents','/incidents','Incidents', 'incidents', incident_count),
+        ]),
+        ('Data', [
+          ('catalog',  '/catalog',  'Datasets',  'datasets',  none),
+          ('jobs',     '/jobs',     'Jobs',      'jobs',      none),
+        ]),
+        ('Govern', [
+          ('monitors', '/monitors', 'Checks',    'checks',    breach_count),
+          ('costs',    '/costs',    'Spend',     'cost',      none),
+        ]),
+      ] %}
+      {% for label, items in groups %}
+      <div class="nav-group">
+        <span class="eyebrow">{{ label }}</span>
+        {% for key, href, text, glyph, badge in items %}
+          <a href="{{ href }}" {% if active == key %}class="on" aria-current="page"{% endif %}>
+            {{ icon(glyph) }}
+            <span>{{ text }}</span>
+            {# The badge is emitted only when non-zero: a zero is not news, and a
+               permanent "0" beside Checks trains people to stop reading it.
+               The element itself is omitted rather than left empty -- the grid's
+               third column collapses on its own, and an empty span is a thing
+               screen readers and find-in-page still have to step over. #}
+            {% if badge %}<span class="nav-badge">{{ badge }}</span>{% endif %}
+          </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </nav>
+
+    <div class="rail-foot">
+      {#
+        Theme: three states, and "Auto" is a real one rather than a synonym for
+        whichever theme we happen to prefer. A form, not a script -- ADR-002 means
+        there is nothing client-side to persist a choice or re-apply it, and a
+        server-stamped theme is correct in the first painted frame.
+      #}
+      <form method="post" action="/theme" class="theme">
+        <input type="hidden" name="next" value="{{ here }}">
+        <button type="submit" name="theme" value=""
+                class="{% if not theme %}on{% endif %}"
+                aria-pressed="{{ 'true' if not theme else 'false' }}">Auto</button>
+        <button type="submit" name="theme" value="light"
+                class="{% if theme == 'light' %}on{% endif %}"
+                aria-pressed="{{ 'true' if theme == 'light' else 'false' }}">Light</button>
+        <button type="submit" name="theme" value="dark"
+                class="{% if theme == 'dark' %}on{% endif %}"
+                aria-pressed="{{ 'true' if theme == 'dark' else 'false' }}">Dark</button>
+      </form>
+
+      {% if auth_enabled %}
+      <form method="post" action="/logout" class="logout">
+        <button type="submit">Sign out</button>
+      </form>
+      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
+
+  <main>
+    {#
+      Every page opens the same way: where you are, what this is, and one
+      sentence of why it is shaped the way it is. That sentence is not
+      decoration -- several of these views answer a question by deliberately
+      *not* showing something, and this is where that gets said.
+    #}
+    {% block page_head %}
+    <header class="page-head">
+      <div>
+        {% block eyebrow %}{% endblock %}
+        <h1 class="page-title">{% block heading %}{% endblock %}</h1>
+        {% block note %}{% endblock %}
+      </div>
+      {% block head_aside %}{% endblock %}
+    </header>
+    {% endblock %}
+
+    {% block content %}{% endblock %}
+  </main>
+  </div>
+</body>
+</html>

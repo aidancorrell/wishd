@@ -1,0 +1,71 @@
+# The whole of Phase 00: Postgres and one gateway process.
+#
+# This stays true as the project grows. If a future phase needs Kafka,
+# Elasticsearch and a JVM service to boot, the phase is wrong -- self-hosted
+# data tools die of install complexity more often than of missing features.
+
+name: dataspine
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dataspine
+      POSTGRES_PASSWORD: ${WISHD_POSTGRES_PASSWORD:-dataspine}
+      POSTGRES_DB: dataspine
+    ports:
+      # Database stays loopback-only independently of the gateway bind.
+      - "${WISHD_PG_BIND:-127.0.0.1}:${WISHD_PG_PORT:-${DATASPINE_PG_PORT:-5432}}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dataspine -d dataspine"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Migrations run once, in their own container, before any gateway starts.
+  #
+  # They used to run inside the gateway's own command. That is fine with exactly
+  # one replica and unsafe with two: both would race the same migration. The
+  # advisory lock in `db.migrate` now makes that race safe, but a migration
+  # runner is still not a web server's job -- separating them means a failed
+  # migration stops the deploy instead of crash-looping a serving process, and
+  # `docker compose up --scale gateway=3` does the right thing.
+  migrate:
+    build: .
+    command: wishd migrate
+    environment:
+      DATASPINE_DATABASE_URL: postgresql://dataspine:${WISHD_POSTGRES_PASSWORD:-dataspine}@postgres:5432/dataspine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  gateway:
+    build: .
+    command: wishd serve --host 0.0.0.0 --port 8080
+    environment:
+      DATASPINE_DATABASE_URL: postgresql://dataspine:${WISHD_POSTGRES_PASSWORD:-dataspine}@postgres:5432/dataspine
+      # `make up` generates a token into .env if there isn't one. Running this
+      # stack unauthenticated requires deleting that line on purpose.
+      WISHD_API_TOKENS: ${WISHD_API_TOKENS-${DATASPINE_API_TOKENS:-}}
+      WISHD_ALLOW_INSECURE: ${WISHD_ALLOW_INSECURE-${DATASPINE_ALLOW_INSECURE:-}}
+    volumes:
+      - artifacts:/var/lib/wishd/artifacts
+    ports:
+      - "${WISHD_BIND:-${DATASPINE_BIND:-127.0.0.1}}:${WISHD_PORT:-${DATASPINE_PORT:-8080}}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import httpx,sys; sys.exit(0 if httpx.get('http://localhost:8080/health').status_code==200 else 1)\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
+  artifacts:

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set active = 'monitors' %}
+{% block title %}Checks · wish:d{% endblock %}
+
+{% block eyebrow %}<span class="eyebrow">Govern</span>{% endblock %}
+{% block heading %}Checks{% endblock %}
+{% block note %}
+<p class="page-note">
+  Declared as YAML in your repo and reconciled with <code>apply</code>. Every
+  check reads only what the gateway already collects from Airflow, dbt and
+  Spark — none of them needs warehouse credentials or a scan.
+</p>
+{% endblock %}
+
+{% block content %}
+
+{% if breaches %}
+<section class="breaches">
+  <h2 class="section-title">In breach</h2>
+  <ul class="breach-list">
+    {% for b in breaches %}
+    <li>
+      <a href="/monitors/{{ b.name }}">{{ b.name }}</a>
+      <span class="breach-msg">{{ b.message }}</span>
+      <span class="when">{{ b.breached_at.strftime('%b %d %H:%M') }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if monitors %}
+<table class="runs">
+  <thead>
+    <tr>
+      <th>Monitor</th><th>Kind</th><th>Target</th>
+      <th>Status</th><th>Detail</th><th>Last checked</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in monitors %}
+    <tr class="{% if not m.enabled %}off{% endif %}{% if m.last_status == 'breach' %} is-breach{% endif %}">
+      <td class="job">
+        <a href="/monitors/{{ m.name }}">{{ m.name }}</a>
+        {% if not m.enabled %}<span class="ns">disabled</span>{% endif %}
+      </td>
+      <td><span class="intg">{{ m.kind }}</span></td>
+      <td class="muted">{{ m.target }}</td>
+      <td>
+        <span class="status {{ m.last_status or 'none' }}">{{ m.last_status or '—' }}</span>
+      </td>
+      <td class="muted">{{ m.latest_message or '—' }}</td>
+      <td class="when">
+        {{ m.last_evaluated_at.strftime('%b %d %H:%M') if m.last_evaluated_at else '—' }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>No monitors defined.</p>
+  <pre>wishd apply monitors/</pre>
+</div>
+{% endif %}
+{% endblock %}
