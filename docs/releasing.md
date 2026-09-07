@@ -63,24 +63,29 @@ Verified:
 - `ruff check src tests` clean.
 - Full suite green: 972 passed, 20 deselected (`load`, `scale` and `aws` markers), against a
   real Postgres booted by the session fixture.
-- Secret scan of the tracked tree and of all history in the archive repository for Slack bot
-  tokens, dbt Cloud tokens, GitHub tokens, AWS access keys and private key blocks: no hits.
-  `.env` is untracked. No live dbt Cloud, Snowflake or Slack workspace identifier appears in
-  a tracked file.
+- **The full-history release gate passed on this repository.** `gitleaks git --log-opts=--all`
+  is `workflow_dispatch`-only and does not run on push, so it was dispatched deliberately
+  against `main`: run 34068405193. The tracked-tree scan passed alongside it. A local scan of
+  the archive's 48 commits for Slack bot tokens, dbt Cloud tokens, GitHub tokens, AWS access
+  keys and private key blocks also found nothing. `.env` is untracked, and no live dbt Cloud,
+  Snowflake or Slack workspace identifier appears in a tracked file.
+- Dependency audit: `pip-audit -r constraints.txt --strict` clean. Note that its first attempt
+  failed on a pypi.org read timeout, not a finding — a network failure here looks like a gate
+  failure and is worth re-running before investigating.
 - Retained hosted references: closed by publishing from a new repository rather than by
   changing the archive's visibility.
 - Package build and install outside the checkout: `wishd-1.0.0rc1` sdist and wheel build, the
   wheel installs into a clean environment, `wishd --help` runs, and the 22 migrations, static
   assets and templates are present in the installed package.
+- Docker, in CI: image builds, the gateway refuses an unauthenticated public bind, boots with
+  auth, answers `/ready`, returns 401 on an unauthenticated API call, ingests a seeded
+  pipeline, and keeps its artifact directory across a forced container recreation.
 - Review is enforced: CODEOWNERS assigns the owner, and `main` is protected.
 
 Still open, and therefore not to be described as validated:
 
-- Docker smoke checks, and artifact persistence across gateway recreation.
 - Following the README end to end from a clean checkout, including the no-Docker path.
 - The UI review: light/dark themes, mobile layout, keyboard focus, login/logout.
-- Dependency audit, and a `gitleaks` run using `.gitleaks.toml` (CI runs it; it has not been
-  run locally against this tree).
 - License review of the built artifacts.
 - Distribution beyond this repository. No package registry or container image has been
   published, so no installation command for one belongs in the docs yet.
