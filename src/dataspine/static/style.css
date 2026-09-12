@@ -819,6 +819,20 @@ a.link-chip:hover { border-color: var(--ink-3); color: var(--ink); text-decorati
 .link-chip.ref { color: var(--ink-3); }
 .link-chip.ref b { color: var(--ink-2); font-weight: 500; }
 
+/* Actions read as buttons rather than references: every one of them *does*
+   something -- opens the warehouse, hands the failure to an agent -- where a
+   link chip above only says where a run came from. */
+.links.actions { margin: 1rem 0 1.2rem; }
+.link-chip.action {
+  font-family: inherit;
+  font-size: .78rem;
+  padding: .4rem .8rem;
+  border-color: var(--ink-3);
+  color: var(--ink);
+  font-weight: 500;
+}
+a.link-chip.action:hover { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
 .facts dd.late { color: var(--warn); }
 
 /* ---------------------------------------------------------- spark metrics */

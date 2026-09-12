@@ -78,6 +78,20 @@
 </div>
 {% endif %}
 
+{% if actions %}
+{# The same actions the alert offers, for the reader who arrived by following a
+   run tree instead of a Slack message. Below the failure rather than above it:
+   what went wrong is the question, and these are answers to "now what". #}
+<div class="links actions">
+  {% for item in actions %}
+    <a class="link-chip action {{ item.kind }}" href="{{ item.url }}"
+       {% if item.kind != 'agent' %}target="_blank" rel="noopener noreferrer"{% endif %}>
+      {{ item.label }}{% if item.kind != 'agent' %} ↗{% endif %}
+    </a>
+  {% endfor %}
+</div>
+{% endif %}
+
 {% if run.error_message %}
 {# The error goes first. On a failed run this is the entire reason the page was
    opened, and burying it under a tree would be a UX joke. #}
