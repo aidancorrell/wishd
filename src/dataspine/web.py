@@ -638,6 +638,30 @@ def _dbt_unique_id(job_name: str | None) -> str | None:
     return rest if kind in ("test", "model", "snapshot", "seed") else None
 
 
+def _failing_child_unique_id(conn: Any, run: dict[str, Any]) -> str | None:
+    """The node that took this invocation down with it.
+
+    A dbt invocation's own run carries no check row -- it is a container, and
+    what failed is one assertion inside it. Reading up from the child is what the
+    Slack summary does when it says "1 failure" and puts the buttons in the
+    thread. The page has no thread, so the invocation offers the actions of the
+    failure it is reporting rather than offering nothing at all.
+    """
+    rows = conn.execute(
+        """
+        select j.name
+        from runs r join jobs j on j.id = r.job_id
+        where r.root_run_id = %(root)s and r.state = 'FAILED' and r.run_id <> %(root)s
+        order by r.started_at desc
+        """,
+        {"root": run["run_id"]},
+    ).fetchall()
+    for row in rows:
+        if unique_id := _dbt_unique_id(row["name"]):
+            return unique_id
+    return None
+
+
 def run_actions(
     conn: Any, run: dict[str, Any], facets: dict[str, Any], *, base_url: str | None
 ) -> list[dict[str, Any]]:
@@ -655,8 +679,10 @@ def run_actions(
     """
     from . import agents
 
-    unique_id = _dbt_unique_id(run.get("job_name"))
-    if not unique_id or run.get("state") != "FAILED":
+    if run.get("state") != "FAILED":
+        return []
+    unique_id = _dbt_unique_id(run.get("job_name")) or _failing_child_unique_id(conn, run)
+    if not unique_id:
         return []
     row = conn.execute(
         """

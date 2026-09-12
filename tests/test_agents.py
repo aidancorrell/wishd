@@ -718,3 +718,33 @@ def test_a_run_page_with_nothing_to_act_on_offers_no_buttons(api_client, configu
     run_id = api_client.get("/api/v1/runs", params={"roots_only": True}).json()["runs"][0]["run_id"]
 
     assert "link-chip action" not in api_client.get(f"/runs/{run_id}").text
+
+
+def test_an_invocation_offers_the_actions_of_the_node_that_failed(
+    api_client, conn, configured
+):
+    """A dbt invocation's own run carries no check row -- it is a container.
+
+    Offering nothing there would be the wrong answer for the page a reader
+    actually lands on from the run list, so it reads up from the failure it is
+    reporting, which is what the Slack summary does when it puts the buttons in
+    its thread.
+    """
+    import json
+    from pathlib import Path
+
+    from dataspine import dbt_artifacts
+
+    fixtures = Path(__file__).parent / "fixtures"
+    invocation = dbt_artifacts.parse(
+        json.loads((fixtures / "dbt_run_results_1.12.3.json").read_text()),
+        json.loads((fixtures / "dbt_manifest_1.12.3.json").read_text()),
+    )
+    api_client.post(
+        "/api/v1/lineage/batch", json=dbt_artifacts.events(invocation, job_name="Nightly Build")
+    )
+    dq.import_results(conn, source="dbt", rows=dbt_artifacts.test_results(invocation))
+    conn.commit()
+
+    root = str(dbt_artifacts.run_id_for(invocation.invocation_id))
+    assert "Claude Code" in api_client.get(f"/runs/{root}").text
