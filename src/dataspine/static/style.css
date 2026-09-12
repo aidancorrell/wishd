@@ -824,6 +824,8 @@ a.link-chip:hover { border-color: var(--ink-3); color: var(--ink); text-decorati
    link chip above only says where a run came from. */
 .links.actions { margin: 1rem 0 1.2rem; }
 .link-chip.action {
+  align-items: center;
+  gap: .45rem;
   font-family: inherit;
   font-size: .78rem;
   padding: .4rem .8rem;
@@ -831,6 +833,10 @@ a.link-chip:hover { border-color: var(--ink-3); color: var(--ink); text-decorati
   color: var(--ink);
   font-weight: 500;
 }
+.link-chip.action .ico { flex: none; opacity: .75; }
+.link-chip.action .out { opacity: .5; font-size: .7em; }
+a.link-chip.action:hover .ico,
+a.link-chip.action:hover .out { opacity: 1; }
 a.link-chip.action:hover { background: var(--ink); color: var(--surface); border-color: var(--ink); }
 
 .facts dd.late { color: var(--warn); }

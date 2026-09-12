@@ -569,6 +569,10 @@ def run_detail(request: Request, run_id: UUID) -> Any:
     run_links = links.run_links(run["integration"], facets.get("run_facets"))
     if not run_links:
         run_links = [item for item in inherited_links if item.get("url")]
+    # Promoted to a button below, and a link that appears twice on one page reads
+    # as two different links until someone checks.
+    promoted = {item["label"] for item in actions}
+    run_links = [item for item in run_links if item["label"] not in promoted]
     run_timing = timing.run_timing(facets.get("run_facets"), run["started_at"])
 
     # The tree is returned flat with a level; nest it for rendering.
@@ -681,9 +685,22 @@ def run_actions(
 
     if run.get("state") != "FAILED":
         return []
+
+    out: list[dict[str, Any]] = []
+    # dbt Cloud is an action, not a reference: it is the one link here that opens
+    # the system that ran this, and it is the same href the alert offers. Taken
+    # from the root when this run has none, because a dbt Cloud tree states its
+    # URL once and every node below belongs to that run.
+    cloud = (facets.get("run_facets") or {}).get("dbt_cloud") or {}
+    if not cloud.get("href") and run.get("root_run_id"):
+        root_facets = queries.run_facets(conn, run["root_run_id"]).get("run_facets") or {}
+        cloud = root_facets.get("dbt_cloud") or {}
+    if isinstance(cloud.get("href"), str) and cloud["href"].startswith("http"):
+        out.append({"label": "dbt Cloud", "url": cloud["href"], "kind": "dbt", "icon": "dbt"})
+
     unique_id = _dbt_unique_id(run.get("job_name")) or _failing_child_unique_id(conn, run)
     if not unique_id:
-        return []
+        return out
     row = conn.execute(
         """
         select source, table_name, check_name, status, value, measured_at, details
@@ -695,17 +712,16 @@ def run_actions(
         {"unique_id": unique_id},
     ).fetchone()
 
-    out: list[dict[str, Any]] = []
     query_link = links.snowflake_query((row.get("details") or {}).get("query_id")) if row else None
     if query_link:
-        out.append({**query_link, "kind": "warehouse"})
+        out.append({**query_link, "kind": "warehouse", "icon": "snowflake"})
 
     # Keyed the way `notify` keys the same node, so the button on the page and
     # the button in Slack open the same briefing rather than two of them.
     dedup_key = f"{run.get('root_run_id') or run['run_id']}/{unique_id}"
     briefing = agents.briefing_from_check_row(conn, row) if row else None
     for label, url in agents.handoff_urls("dbt_job", dedup_key, base_url, briefing):
-        out.append({"label": label, "url": url, "kind": "agent"})
+        out.append({"label": label, "url": url, "kind": "agent", "icon": "agent"})
     return out
 
 

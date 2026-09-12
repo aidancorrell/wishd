@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {% extends "base.html" %}
 {% set active = 'runs' %}
 {% block title %}{{ run.job_name }} · wish:d{% endblock %}
@@ -86,7 +87,8 @@
   {% for item in actions %}
     <a class="link-chip action {{ item.kind }}" href="{{ item.url }}"
        {% if item.kind != 'agent' %}target="_blank" rel="noopener noreferrer"{% endif %}>
-      {{ item.label }}{% if item.kind != 'agent' %} ↗{% endif %}
+      {{ icon(item.icon) }}<span>{{ item.label }}</span>
+      {%- if item.kind != 'agent' %}<span class="out" aria-hidden="true">↗</span>{% endif %}
     </a>
   {% endfor %}
 </div>

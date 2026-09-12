@@ -748,3 +748,36 @@ def test_an_invocation_offers_the_actions_of_the_node_that_failed(
 
     root = str(dbt_artifacts.run_id_for(invocation.invocation_id))
     assert "Claude Code" in api_client.get(f"/runs/{root}").text
+
+
+def test_dbt_cloud_is_a_button_and_appears_once(api_client, conn, configured):
+    """dbt Cloud is an action, not a reference: it opens the system that ran this.
+
+    It used to sit in the reference row above, which is also where the invocation
+    id and the project name live -- things you copy, not things you click. A link
+    rendered in both places reads as two different links until someone checks.
+    """
+    import json
+    from pathlib import Path
+
+    from dataspine import dbt_artifacts
+
+    fixtures = Path(__file__).parent / "fixtures"
+    invocation = dbt_artifacts.parse(
+        json.loads((fixtures / "dbt_run_results_1.12.3.json").read_text()),
+        json.loads((fixtures / "dbt_manifest_1.12.3.json").read_text()),
+    )
+    href = "https://zt102.us1.dbt.com/deploy/1/projects/2/runs/3/"
+    events = dbt_artifacts.events(
+        invocation,
+        job_name="Nightly Build",
+        run_facets={"dbt_cloud": {"href": href, "runId": "3"}},
+    )
+    api_client.post("/api/v1/lineage/batch", json=events)
+    dq.import_results(conn, source="dbt", rows=dbt_artifacts.test_results(invocation))
+    conn.commit()
+
+    body = api_client.get(f"/runs/{dbt_artifacts.run_id_for(invocation.invocation_id)}").text
+    assert body.count(href) == 1
+    assert 'class="link-chip action dbt"' in body
+    assert "ico-dbt" in body
