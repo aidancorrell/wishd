@@ -1236,6 +1236,67 @@ def push_artifacts(directory: Path, run_id: str, *, url: str = "", token: str = 
     return pushed
 
 
+def ingest_dbt_run(directory: Path, *, job_name: str = "", url: str = "",
+                   token: str = "", client: Any = None) -> dict[str, Any]:
+    """Record a local `target/` as a run tree, for dbt invocations no one reports.
+
+    The gap this closes is the dbt Cloud CLI. It executes on dbt Cloud's
+    infrastructure, so `dbt-ol` never sees it, and it is *not* a job run either --
+    the Admin API's run list holds scheduled and API-triggered runs only, so
+    `pull-dbt-cloud` cannot find it however long it looks. The invocation is
+    real, it touched the warehouse, and until now nothing could record it.
+
+    What it does have is `target/`, which the Cloud CLI downloads when the
+    invocation finishes. That is the same `run_results.json` dbt Cloud's API
+    serves, so the artifacts parser already handles it and the run tree comes out
+    named the way `dbt-ol` names things.
+
+    Not for a stack already running `dbt-ol`: that stack reports its own tree and
+    this would synthesise a second copy of every run beside it. `push-artifacts`
+    is the command for that case -- it keeps the artifacts and takes only the
+    tests, precisely because the runs are already accounted for.
+    """
+    import httpx
+
+    from . import dbt_artifacts
+
+    results_path = directory / dbt_artifacts.RUN_RESULTS
+    if not results_path.is_file():
+        return {"events": 0, "run_id": None, "pushed": []}
+
+    manifest_path = directory / dbt_artifacts.MANIFEST
+    invocation = dbt_artifacts.parse(
+        json.loads(results_path.read_text()),
+        json.loads(manifest_path.read_text()) if manifest_path.is_file() else None,
+    )
+    events = dbt_artifacts.events(invocation, job_name=job_name or None)
+    run_id = str(dbt_artifacts.run_id_for(invocation.invocation_id))
+
+    owns_client = client is None
+    if owns_client:
+        client = httpx.Client(timeout=60, headers=_auth_headers(token))
+    base = url.rstrip("/") if url else ""
+    try:
+        resp = client.post(f"{base}/api/v1/lineage/batch", json=events)
+        _abort_on_auth_error(resp)
+        if resp.status_code >= 400:
+            console.print(f"[red]{resp.status_code}[/] {resp.text[:160]}")
+            return {"events": 0, "run_id": run_id, "pushed": []}
+        # The upload is what records the tests: the gateway reads the artifacts
+        # it is handed, so there is no second endpoint to keep in step with it.
+        pushed = push_artifacts(directory, run_id, url=url, token=token, client=client)
+    finally:
+        if owns_client:
+            client.close()
+
+    return {
+        "events": len(events),
+        "run_id": run_id,
+        "job": dbt_artifacts.root_job_name(invocation, job_name or None),
+        "pushed": pushed,
+    }
+
+
 @app.command("dbt-cloud-check")
 def dbt_cloud_check() -> None:
     """Show how dbt Cloud is configured, and what it can actually see.
@@ -1436,6 +1497,37 @@ def push_artifacts_command(
         console.print(f"[green]pushed[/] {', '.join(pushed)}")
     else:
         console.print(f"[dim]nothing to push from {directory}[/]")
+
+
+@app.command("ingest-dbt-run")
+def ingest_dbt_run_command(
+    directory: Path = typer.Option(Path("target"), help="dbt target/ directory."),
+    job_name: str = typer.Option("", help="Label the root run, as dbt Cloud's job name does."),
+    url: str = typer.Option("http://localhost:8080", help="Gateway URL."),
+    token: str = typer.Option("", help="Bearer token, if the gateway has auth enabled."),
+) -> None:
+    """Record a finished dbt invocation from its artifacts, tree and all.
+
+    For dbt runs nothing else reports -- the dbt Cloud CLI above all, which runs
+    on dbt Cloud but never appears in the Admin API's run list, so
+    `pull-dbt-cloud` cannot see it:
+
+        dbt run && dbt test          # dbt Cloud CLI, artifacts land in target/
+        wishd ingest-dbt-run --directory target/
+
+    Use `push-artifacts` instead when the stack already emits OpenLineage
+    through `dbt-ol`. This synthesises the run tree; running both would record
+    every run twice.
+    """
+    result = ingest_dbt_run(directory, job_name=job_name, url=url, token=token)
+    if not result["events"]:
+        console.print(f"[dim]no run_results.json in {directory}[/]")
+        return
+    console.print(
+        f"[green]recorded[/] {result['job']} as {result['run_id']} ({result['events']} events)"
+    )
+    if result["pushed"]:
+        console.print(f"[dim]artifacts: {', '.join(result['pushed'])}[/]")
 
 
 @app.command("ingest-eventlog")

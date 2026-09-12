@@ -250,3 +250,45 @@ def test_cli_push_is_quiet_when_there_is_nothing_to_push(api_client, tmp_path, m
     empty.mkdir()
     assert push_artifacts(empty, str(uuid4()), client=api_client) == []
     artifacts.reset_store()
+
+
+def test_cli_records_a_cloud_cli_invocation_nothing_else_reports(
+    api_client, tmp_path, monkeypatch
+):
+    """The dbt Cloud CLI leaves `target/` behind and nothing else.
+
+    It runs on dbt Cloud, so `dbt-ol` never sees it, and it is absent from the
+    Admin API's run list, so `pull-dbt-cloud` cannot find it either. The
+    artifacts are the only record, and they are enough: the tree comes out named
+    the way `dbt-ol` names things, and the failing test is recorded with it.
+    """
+    from pathlib import Path
+
+    from dataspine.cli import ingest_dbt_run
+
+    monkeypatch.setenv(artifacts.STORAGE_DIR_ENV, str(tmp_path / "cloud-cli"))
+    artifacts.reset_store()
+
+    fixtures = Path(__file__).parent / "fixtures"
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "manifest.json").write_bytes((fixtures / "dbt_manifest_1.12.3.json").read_bytes())
+    (target / "run_results.json").write_bytes(
+        (fixtures / "dbt_run_results_1.12.3.json").read_bytes()
+    )
+
+    result = ingest_dbt_run(target, job_name="Hourly Run and Test", client=api_client)
+
+    assert result["events"] > 0
+    assert result["job"] == "analytics.Hourly Run and Test"
+    assert sorted(result["pushed"]) == ["manifest.json", "run_results.json"]
+
+    root = api_client.get(f"/api/v1/runs/{result['run_id']}").json()
+    assert root["state"] == "FAILED"
+    tree = api_client.get(f"/api/v1/runs/{result['run_id']}/tree").json()
+    names = {node["job_name"] for node in tree["nodes"]}
+    assert any("not_null_fct_order_items_order_id" in name for name in names)
+
+    failing = api_client.get("/api/v1/dq/failing").json()["failing"]
+    assert "not_null_fct_order_items_order_id" in {row["check_name"] for row in failing}
+    artifacts.reset_store()
