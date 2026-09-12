@@ -667,3 +667,117 @@ def test_a_healthy_upstream_is_not_reported_as_failing(conn, configured):
     upstreams, failing = agents._lineage_context(conn, "DB.S.fct_order_items")
     assert upstreams == ("stg_orders",)
     assert failing == ()
+
+
+def test_the_run_page_offers_the_same_actions_the_alert_does(api_client, conn, configured):
+    """A reader who followed the tree down to the failure is asking the question
+    the alert's buttons answer.
+
+    The alert is not the only way in. Someone who opened the run page from the
+    run list has the same failing test in front of them, and sending them to find
+    the Slack message first is what teaches people the page is the lesser
+    surface. Same key, so both open the same briefing.
+    """
+    import json
+    from pathlib import Path
+
+    from dataspine import dbt_artifacts
+
+    fixtures = Path(__file__).parent / "fixtures"
+    run_results = json.loads((fixtures / "dbt_run_results_1.12.3.json").read_text())
+    manifest = json.loads((fixtures / "dbt_manifest_1.12.3.json").read_text())
+    invocation = dbt_artifacts.parse(run_results, manifest)
+
+    events = dbt_artifacts.events(invocation, job_name="Nightly Build")
+    api_client.post("/api/v1/lineage/batch", json=events)
+    dq.import_results(conn, source="dbt", rows=dbt_artifacts.test_results(invocation))
+    conn.commit()
+
+    failing = api_client.get("/api/v1/dq/failing").json()["failing"]
+    assert failing, "fixture should carry a failing test"
+
+    runs = api_client.get("/api/v1/runs", params={"state": "FAILED"}).json()["runs"]
+    node = next(r for r in runs if "not_null_fct_order_items_order_id" in r["job_name"])
+
+    body = api_client.get(f"/runs/{node['run_id']}").text
+    assert "Claude Code" in body
+    assert "Claude Cloud" in body
+    assert "Codex" in body
+    assert "link-chip action" in body
+
+
+def test_a_run_page_with_nothing_to_act_on_offers_no_buttons(api_client, configured):
+    """A run that is not a dbt node has no check row, no warehouse query and
+    nothing to brief an agent with. An empty row of buttons would be furniture."""
+    from datetime import UTC, datetime
+
+    from dataspine.simulate import build_pipeline
+
+    events = build_pipeline(fail_model=None, start=datetime(2026, 8, 2, tzinfo=UTC))
+    api_client.post("/api/v1/lineage/batch", json=events)
+    run_id = api_client.get("/api/v1/runs", params={"roots_only": True}).json()["runs"][0]["run_id"]
+
+    assert "link-chip action" not in api_client.get(f"/runs/{run_id}").text
+
+
+def test_an_invocation_offers_the_actions_of_the_node_that_failed(
+    api_client, conn, configured
+):
+    """A dbt invocation's own run carries no check row -- it is a container.
+
+    Offering nothing there would be the wrong answer for the page a reader
+    actually lands on from the run list, so it reads up from the failure it is
+    reporting, which is what the Slack summary does when it puts the buttons in
+    its thread.
+    """
+    import json
+    from pathlib import Path
+
+    from dataspine import dbt_artifacts
+
+    fixtures = Path(__file__).parent / "fixtures"
+    invocation = dbt_artifacts.parse(
+        json.loads((fixtures / "dbt_run_results_1.12.3.json").read_text()),
+        json.loads((fixtures / "dbt_manifest_1.12.3.json").read_text()),
+    )
+    api_client.post(
+        "/api/v1/lineage/batch", json=dbt_artifacts.events(invocation, job_name="Nightly Build")
+    )
+    dq.import_results(conn, source="dbt", rows=dbt_artifacts.test_results(invocation))
+    conn.commit()
+
+    root = str(dbt_artifacts.run_id_for(invocation.invocation_id))
+    assert "Claude Code" in api_client.get(f"/runs/{root}").text
+
+
+def test_dbt_cloud_is_a_button_and_appears_once(api_client, conn, configured):
+    """dbt Cloud is an action, not a reference: it opens the system that ran this.
+
+    It used to sit in the reference row above, which is also where the invocation
+    id and the project name live -- things you copy, not things you click. A link
+    rendered in both places reads as two different links until someone checks.
+    """
+    import json
+    from pathlib import Path
+
+    from dataspine import dbt_artifacts
+
+    fixtures = Path(__file__).parent / "fixtures"
+    invocation = dbt_artifacts.parse(
+        json.loads((fixtures / "dbt_run_results_1.12.3.json").read_text()),
+        json.loads((fixtures / "dbt_manifest_1.12.3.json").read_text()),
+    )
+    href = "https://zt102.us1.dbt.com/deploy/1/projects/2/runs/3/"
+    events = dbt_artifacts.events(
+        invocation,
+        job_name="Nightly Build",
+        run_facets={"dbt_cloud": {"href": href, "runId": "3"}},
+    )
+    api_client.post("/api/v1/lineage/batch", json=events)
+    dq.import_results(conn, source="dbt", rows=dbt_artifacts.test_results(invocation))
+    conn.commit()
+
+    body = api_client.get(f"/runs/{dbt_artifacts.run_id_for(invocation.invocation_id)}").text
+    assert body.count(href) == 1
+    assert 'class="link-chip action dbt"' in body
+    assert "ico-dbt" in body

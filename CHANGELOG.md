@@ -25,6 +25,21 @@ Notable changes per release. Dates are the release date, not the merge date.
 
 ### Added
 
+- **The run page offers what the alert offers.** A failed dbt node now carries the
+  warehouse query link and the agent handoff buttons that until now existed only
+  in the Slack thread, keyed identically so both open the same briefing. A dbt
+  Cloud tree states its URL once on the root, so child runs inherit it rather
+  than showing nothing. The gateway is passed the Slack, link and agent settings
+  in Compose, without which its ingest-path announcement is silently skipped.
+
+- **dbt Cloud CLI invocations.** `wishd ingest-dbt-run` records a finished dbt
+  invocation from the `target/` directory it leaves behind, synthesising the run
+  tree the way the dbt Cloud reader does. It closes the one dbt path nothing
+  reported: the Cloud CLI runs on dbt Cloud, so `dbt-ol` never sees it, and it
+  never appears in the Admin API's run list, so `pull-dbt-cloud` cannot find it.
+  Keyed off dbt's `invocation_id`, so a second pass rewrites one run. Not for a
+  stack already running `dbt-ol`, which would then record every run twice.
+
 - **Slack, past one webhook.** `DATASPINE_SLACK_BOT_TOKEN` posts through
   `chat.postMessage`, so one credential reaches any channel — the only shape
   that can honour a routing file. Routing itself is committed YAML

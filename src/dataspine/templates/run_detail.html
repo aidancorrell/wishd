@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {% extends "base.html" %}
 {% set active = 'runs' %}
 {% block title %}{{ run.job_name }} · wish:d{% endblock %}
@@ -74,6 +75,21 @@
     {% else %}
       <span class="link-chip ref"><b>{{ item.label }}</b> {{ item.value }}</span>
     {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if actions %}
+{# The same actions the alert offers, for the reader who arrived by following a
+   run tree instead of a Slack message. Below the failure rather than above it:
+   what went wrong is the question, and these are answers to "now what". #}
+<div class="links actions">
+  {% for item in actions %}
+    <a class="link-chip action {{ item.kind }}" href="{{ item.url }}"
+       {% if item.kind != 'agent' %}target="_blank" rel="noopener noreferrer"{% endif %}>
+      {{ icon(item.icon) }}<span>{{ item.label }}</span>
+      {%- if item.kind != 'agent' %}<span class="out" aria-hidden="true">↗</span>{% endif %}
+    </a>
   {% endfor %}
 </div>
 {% endif %}
