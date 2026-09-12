@@ -251,8 +251,15 @@ finishes, and that is the same `run_results.json` the Admin API serves:
 
 ```bash
 dbt run && dbt test                     # dbt Cloud CLI
-wishd ingest-dbt-run --directory target/ --job-name "Hourly Run and Test"
+wishd ingest-dbt-run --directory target/ --job-name "Hourly Run and Test" \
+  --dbt-cloud-url https://abc123.us1.dbt.com/deploy/<account>/projects/<project>/
 ```
+
+`--dbt-cloud-url` is stated by you because nothing else can state it. A Cloud CLI
+invocation has no address of its own — it is missing from the run list, no invocations
+endpoint exists to ask, and the artifacts name neither the account nor the project — so the
+project page is usually what you want the run's **dbt Cloud** button to open. Left unset,
+the run carries no link rather than a guessed one that 404s.
 
 That synthesises the run tree the way the dbt Cloud reader does, keyed off dbt's own
 `invocation_id`, so running it twice rewrites one run rather than making two. Do not run it on

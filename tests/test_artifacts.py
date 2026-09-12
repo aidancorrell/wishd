@@ -292,3 +292,33 @@ def test_cli_records_a_cloud_cli_invocation_nothing_else_reports(
     failing = api_client.get("/api/v1/dq/failing").json()["failing"]
     assert "not_null_fct_order_items_order_id" in {row["check_name"] for row in failing}
     artifacts.reset_store()
+
+
+def test_a_cloud_cli_invocation_links_where_it_is_told_to(api_client, tmp_path, monkeypatch):
+    """A Cloud CLI invocation has no address of its own.
+
+    It is absent from the run list, no invocations endpoint exists to ask, and
+    the artifacts name neither the account nor the project -- so the only party
+    that knows where `dbt Cloud` should point is whoever runs the import. Unset,
+    the run carries no link at all rather than a guessed one.
+    """
+    from pathlib import Path
+
+    from dataspine.cli import ingest_dbt_run
+
+    monkeypatch.setenv(artifacts.STORAGE_DIR_ENV, str(tmp_path / "cloud-cli-link"))
+    artifacts.reset_store()
+
+    fixtures = Path(__file__).parent / "fixtures"
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "manifest.json").write_bytes((fixtures / "dbt_manifest_1.12.3.json").read_bytes())
+    (target / "run_results.json").write_bytes(
+        (fixtures / "dbt_run_results_1.12.3.json").read_bytes()
+    )
+
+    href = "https://zt102.us1.dbt.com/deploy/1/projects/2/"
+    result = ingest_dbt_run(target, dbt_cloud_url=href, client=api_client)
+    assert href in api_client.get(f"/runs/{result['run_id']}").text
+
+    artifacts.reset_store()

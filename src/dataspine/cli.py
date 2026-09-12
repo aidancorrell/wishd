@@ -1236,8 +1236,8 @@ def push_artifacts(directory: Path, run_id: str, *, url: str = "", token: str = 
     return pushed
 
 
-def ingest_dbt_run(directory: Path, *, job_name: str = "", url: str = "",
-                   token: str = "", client: Any = None) -> dict[str, Any]:
+def ingest_dbt_run(directory: Path, *, job_name: str = "", dbt_cloud_url: str = "",
+                   url: str = "", token: str = "", client: Any = None) -> dict[str, Any]:
     """Record a local `target/` as a run tree, for dbt invocations no one reports.
 
     The gap this closes is the dbt Cloud CLI. It executes on dbt Cloud's
@@ -1255,6 +1255,13 @@ def ingest_dbt_run(directory: Path, *, job_name: str = "", url: str = "",
     this would synthesise a second copy of every run beside it. `push-artifacts`
     is the command for that case -- it keeps the artifacts and takes only the
     tests, precisely because the runs are already accounted for.
+
+    `dbt_cloud_url` is stated by the caller because nothing else can state it. A
+    Cloud CLI invocation has no address of its own: it is absent from the run
+    list, no invocations endpoint exists to ask, and the artifacts name neither
+    the account nor the project. So whoever runs this is the only party that
+    knows where the button should point -- usually the project in dbt Cloud --
+    and an unset value produces no link rather than a guessed one that 404s.
     """
     import httpx
 
@@ -1269,7 +1276,12 @@ def ingest_dbt_run(directory: Path, *, job_name: str = "", url: str = "",
         json.loads(results_path.read_text()),
         json.loads(manifest_path.read_text()) if manifest_path.is_file() else None,
     )
-    events = dbt_artifacts.events(invocation, job_name=job_name or None)
+    run_facets = None
+    if dbt_cloud_url.startswith("http"):
+        run_facets = {"dbt_cloud": {"href": dbt_cloud_url}}
+    events = dbt_artifacts.events(
+        invocation, job_name=job_name or None, run_facets=run_facets
+    )
     run_id = str(dbt_artifacts.run_id_for(invocation.invocation_id))
 
     owns_client = client is None
@@ -1503,6 +1515,9 @@ def push_artifacts_command(
 def ingest_dbt_run_command(
     directory: Path = typer.Option(Path("target"), help="dbt target/ directory."),
     job_name: str = typer.Option("", help="Label the root run, as dbt Cloud's job name does."),
+    dbt_cloud_url: str = typer.Option(
+        "", help="Where the run's `dbt Cloud` link should point; usually the project."
+    ),
     url: str = typer.Option("http://localhost:8080", help="Gateway URL."),
     token: str = typer.Option("", help="Bearer token, if the gateway has auth enabled."),
 ) -> None:
@@ -1519,7 +1534,9 @@ def ingest_dbt_run_command(
     through `dbt-ol`. This synthesises the run tree; running both would record
     every run twice.
     """
-    result = ingest_dbt_run(directory, job_name=job_name, url=url, token=token)
+    result = ingest_dbt_run(
+        directory, job_name=job_name, dbt_cloud_url=dbt_cloud_url, url=url, token=token
+    )
     if not result["events"]:
         console.print(f"[dim]no run_results.json in {directory}[/]")
         return
