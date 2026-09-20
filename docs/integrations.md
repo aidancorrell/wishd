@@ -243,6 +243,29 @@ A webhook (`POST /api/v1/dbt-cloud/webhook`, HMAC-verified) does the same within
 job finishing. Run both: ingest is idempotent, so the overlap costs nothing and the poll
 catches whatever the webhook dropped.
 
+**The dbt Cloud CLI is neither of those cases.** It runs on dbt Cloud's infrastructure, so
+`dbt-ol` never sees it, and its invocations are absent from the Admin API's run list, which
+holds scheduled and API-triggered job runs only — so `pull-dbt-cloud` cannot find one however
+long it looks. What it does leave behind is `target/`, downloaded when the invocation
+finishes, and that is the same `run_results.json` the Admin API serves:
+
+```bash
+dbt run && dbt test                     # dbt Cloud CLI
+wishd ingest-dbt-run --directory target/ --job-name "Hourly Run and Test" \
+  --dbt-cloud-url https://abc123.us1.dbt.com/deploy/<account>/projects/<project>/
+```
+
+`--dbt-cloud-url` is stated by you because nothing else can state it. A Cloud CLI
+invocation has no address of its own — it is missing from the run list, no invocations
+endpoint exists to ask, and the artifacts name neither the account nor the project — so the
+project page is usually what you want the run's **dbt Cloud** button to open. Left unset,
+the run carries no link rather than a guessed one that 404s.
+
+That synthesises the run tree the way the dbt Cloud reader does, keyed off dbt's own
+`invocation_id`, so running it twice rewrites one run rather than making two. Do not run it on
+a stack that already emits OpenLineage through `dbt-ol`: that stack reports its own tree, and
+this would record a second copy of every run beside it. Use `push-artifacts` there instead.
+
 Creating the subscription needs a **service token**, which some dbt Cloud plans do not offer —
 on those, every webhook endpoint returns 404 and polling is the supported path.
 `wishd dbt-cloud-check` reports which case you are in. Set

@@ -51,6 +51,24 @@ services:
       # stack unauthenticated requires deleting that line on purpose.
       WISHD_API_TOKENS: ${WISHD_API_TOKENS-${DATASPINE_API_TOKENS:-}}
       WISHD_ALLOW_INSECURE: ${WISHD_ALLOW_INSECURE-${DATASPINE_ALLOW_INSECURE:-}}
+      # The gateway sends Slack messages of its own: a dbt job is announced on
+      # the ingest path rather than by a sweep, because a webhook that has
+      # already fetched and parsed the run should not then wait for a poller.
+      # Without these that announcement is silently skipped here and only the
+      # cron commands -- which run outside the container with their own
+      # environment -- can deliver, which is not what a real deployment does.
+      #
+      # `SLACK_ROUTES` is deliberately absent: it names a file on the host that
+      # this container cannot see, and routing only ever refines
+      # `SLACK_CHANNEL`, which works here as it stands.
+      WISHD_SLACK_BOT_TOKEN: ${WISHD_SLACK_BOT_TOKEN-${DATASPINE_SLACK_BOT_TOKEN:-}}
+      WISHD_SLACK_CHANNEL: ${WISHD_SLACK_CHANNEL-${DATASPINE_SLACK_CHANNEL:-}}
+      # What those messages link back to, and what a failure hands to an agent.
+      WISHD_BASE_URL: ${WISHD_BASE_URL-${DATASPINE_BASE_URL:-}}
+      WISHD_SNOWFLAKE_ACCOUNT_URL: ${WISHD_SNOWFLAKE_ACCOUNT_URL-${DATASPINE_SNOWFLAKE_ACCOUNT_URL:-}}
+      WISHD_AGENT_TARGETS: ${WISHD_AGENT_TARGETS-${DATASPINE_AGENT_TARGETS:-}}
+      WISHD_AGENT_SECRET: ${WISHD_AGENT_SECRET-${DATASPINE_AGENT_SECRET:-}}
+      WISHD_AGENT_CWD: ${WISHD_AGENT_CWD-${DATASPINE_AGENT_CWD:-}}
     volumes:
       - artifacts:/var/lib/wishd/artifacts
     ports:

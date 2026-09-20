@@ -43,6 +43,7 @@ from . import (
 )
 from . import heuristics as heuristics_mod
 from . import monitors as monitors_mod
+from .config import env
 from .db import connection
 
 HERE = Path(__file__).parent
@@ -554,9 +555,24 @@ def run_detail(request: Request, run_id: UUID) -> Any:
         sql = {"query": facets.get("sql"), "job_name": None, "hops": 0}
         if not sql["query"]:
             sql = queries.inherited_sql(conn, run_id) or sql
+        actions = run_actions(conn, run, facets, base_url=_web_base_url(request))
+        # A dbt Cloud tree states its URL once, on the root. Every node in it
+        # belongs to that run, so the link is inherited rather than absent on
+        # each of the children -- which is where a reader actually is when they
+        # want it.
+        inherited_links = []
+        if not facets.get("run_facets", {}).get("dbt_cloud"):
+            root_facets = queries.run_facets(conn, root).get("run_facets")
+            inherited_links = links.run_links(run["integration"], root_facets)
 
     # Derived outside the connection block: pure functions over facets.
     run_links = links.run_links(run["integration"], facets.get("run_facets"))
+    if not run_links:
+        run_links = [item for item in inherited_links if item.get("url")]
+    # Promoted to a button below, and a link that appears twice on one page reads
+    # as two different links until someone checks.
+    promoted = {item["label"] for item in actions}
+    run_links = [item for item in run_links if item["label"] not in promoted]
     run_timing = timing.run_timing(facets.get("run_facets"), run["started_at"])
 
     # The tree is returned flat with a level; nest it for rendering.
@@ -583,6 +599,7 @@ def run_detail(request: Request, run_id: UUID) -> Any:
         history=history,
         sql=sql,
         run_links=run_links,
+        actions=actions,
         artifacts=run_artifacts,
         spark=spark,
         findings=heuristics_mod.analyse(spark["metrics"]) if spark else [],
@@ -590,6 +607,122 @@ def run_detail(request: Request, run_id: UUID) -> Any:
         humanize=timing.humanize,
         run_facets=facets.get("run_facets", {}),
     )
+
+
+# ------------------------------------------------------ actions on a run page
+
+
+def _web_base_url(request: Request) -> str | None:
+    """Where a handoff link should point back to.
+
+    `WISHD_BASE_URL` wins when it is set, because it is the address that works
+    from wherever alerts are read. Failing that the request's own origin is a
+    safe answer here in a way it is not in `notify`: the reader is holding that
+    URL already, so it cannot be the guess that 404s.
+    """
+    from .notify import BASE_URL_ENV
+
+    configured = env.get(BASE_URL_ENV, "").strip().rstrip("/")
+    return configured or str(request.base_url).rstrip("/") or None
+
+
+def _dbt_unique_id(job_name: str | None) -> str | None:
+    """dbt's own `unique_id` back out of the job name we gave it.
+
+    `dbt_artifacts.root_job_name` prefixes every node with its project, so
+    `analytics.test.analytics.not_null_x.e887a2de02` is project `analytics`
+    carrying `test.analytics.not_null_x.e887a2de02`. Recovering it is what lets
+    the page find the check row -- and therefore the warehouse query and the
+    briefing -- without storing a second copy of the id on the run.
+    """
+    if not job_name:
+        return None
+    _, _, rest = job_name.partition(".")
+    kind, _, _ = rest.partition(".")
+    return rest if kind in ("test", "model", "snapshot", "seed") else None
+
+
+def _failing_child_unique_id(conn: Any, run: dict[str, Any]) -> str | None:
+    """The node that took this invocation down with it.
+
+    A dbt invocation's own run carries no check row -- it is a container, and
+    what failed is one assertion inside it. Reading up from the child is what the
+    Slack summary does when it says "1 failure" and puts the buttons in the
+    thread. The page has no thread, so the invocation offers the actions of the
+    failure it is reporting rather than offering nothing at all.
+    """
+    rows = conn.execute(
+        """
+        select j.name
+        from runs r join jobs j on j.id = r.job_id
+        where r.root_run_id = %(root)s and r.state = 'FAILED' and r.run_id <> %(root)s
+        order by r.started_at desc
+        """,
+        {"root": run["run_id"]},
+    ).fetchall()
+    for row in rows:
+        if unique_id := _dbt_unique_id(row["name"]):
+            return unique_id
+    return None
+
+
+def run_actions(
+    conn: Any, run: dict[str, Any], facets: dict[str, Any], *, base_url: str | None
+) -> list[dict[str, Any]]:
+    """The buttons a failed dbt node offers: warehouse, and hand it to an agent.
+
+    The same three things the Slack thread reply offers, for the reader who
+    arrived at the page instead of the alert. Alerts are not the only way in --
+    someone following a run tree down to the failure has exactly the question the
+    alert's buttons answer, and making them go find the Slack message first is
+    the kind of gap that teaches people the page is the lesser surface.
+
+    Built from the check row rather than the run, because that is where the
+    warehouse query id lives: OpenLineage has nowhere to put it, so dbt's
+    `run_results.json` is the only thing that ever knew it.
+    """
+    from . import agents
+
+    if run.get("state") != "FAILED":
+        return []
+
+    out: list[dict[str, Any]] = []
+    # dbt Cloud is an action, not a reference: it is the one link here that opens
+    # the system that ran this, and it is the same href the alert offers. Taken
+    # from the root when this run has none, because a dbt Cloud tree states its
+    # URL once and every node below belongs to that run.
+    cloud = (facets.get("run_facets") or {}).get("dbt_cloud") or {}
+    if not cloud.get("href") and run.get("root_run_id"):
+        root_facets = queries.run_facets(conn, run["root_run_id"]).get("run_facets") or {}
+        cloud = root_facets.get("dbt_cloud") or {}
+    if isinstance(cloud.get("href"), str) and cloud["href"].startswith("http"):
+        out.append({"label": "dbt Cloud", "url": cloud["href"], "kind": "dbt", "icon": "dbt"})
+
+    unique_id = _dbt_unique_id(run.get("job_name")) or _failing_child_unique_id(conn, run)
+    if not unique_id:
+        return out
+    row = conn.execute(
+        """
+        select source, table_name, check_name, status, value, measured_at, details
+        from external_checks
+        where details->>'unique_id' = %(unique_id)s
+        order by measured_at desc
+        limit 1
+        """,
+        {"unique_id": unique_id},
+    ).fetchone()
+
+    query_link = links.snowflake_query((row.get("details") or {}).get("query_id")) if row else None
+    if query_link:
+        out.append({**query_link, "kind": "warehouse", "icon": "snowflake"})
+
+    # Keyed the way `notify` keys the same node, so the button on the page and
+    # the button in Slack open the same briefing rather than two of them.
+    dedup_key = f"{run.get('root_run_id') or run['run_id']}/{unique_id}"
+    briefing = agents.briefing_from_check_row(conn, row) if row else None
+    for label, url in agents.handoff_urls("dbt_job", dedup_key, base_url, briefing):
+        out.append({"label": label, "url": url, "kind": "agent", "icon": "agent"})
+    return out
 
 
 # ---------------------------------------------------------------------- jobs
