@@ -275,6 +275,22 @@ def parse_column_lineage(query: str | None) -> list[dict[str, str]]:
     dbt also emits DDL (`alter table …`) and vendor-specific statements among its
     per-statement SQL, so unparseable input is normal rather than exceptional and
     is skipped quietly.
+
+    **The trace runs against the SELECT, not the statement that wraps it.**
+    SQLGlot's lineage walk finds no table under any column when the SELECT is
+    parenthesised — `create table t as (select …)` — while the projection list is
+    read from the inner SELECT regardless. Every column then traces to nothing and
+    the whole statement declines.
+
+    That is dbt's Postgres materialisation, verbatim: the `fct_orders` capture in
+    `tests/fixtures/` lost all four of its column edges to it, which is the whole
+    of what ADR-007 says this path exists to produce. The parentheses are the
+    trigger and nothing else is — quoting and the leading dbt comment were both
+    measured and neither matters, which is why the unparenthesised CTAS in the
+    tests kept passing while the real capture produced nothing.
+
+    Verified over every SQL facet in `tests/fixtures/`: 29 statements unchanged,
+    1 gained 4 edges, none lost.
     """
     if not query or not query.strip():
         return []
@@ -309,10 +325,12 @@ def parse_column_lineage(query: str | None) -> list[dict[str, str]]:
         if name and name != "*":
             outputs.append(name)
 
+    traced = _traceable(select, statement, query)
+
     edges: list[dict[str, str]] = []
     for column in outputs:
         try:
-            node = sqlglot_lineage(column, query, dialect=DEFAULT_DIALECT)
+            node = sqlglot_lineage(column, traced, dialect=DEFAULT_DIALECT)
         except Exception:
             continue
 
@@ -419,18 +437,31 @@ def coverage_of(query: str | None) -> dict[str, Any]:
     if not any(t.name for t in select.find_all(exp.Table)):
         return {**empty, "declined_reason": "no_upstream"}
 
+    # Parsed once, not once per output column. `parse_column_lineage` re-parses
+    # the whole statement on every call, so calling it inside the loop made a
+    # wide model quadratic in its own column count for an identical answer.
+    edges = parse_column_lineage(query)
+    resolved_columns = {e["column"] for e in edges}
+
     resolved = 0
     reasons: list[str] = []
     for column in outputs:
-        edges = parse_column_lineage(query)
-        matched = [e for e in edges if e["column"] == column]
-        if matched:
+        if column in resolved_columns:
             resolved += 1
             continue
         # Distinguish "we refused because it was ambiguous" from "there was no
         # table under it at all". Both yield no edge; only the first is a
         # decision we made.
-        reasons.append("ambiguous" if _has_multiple_sources(select) else "no_source")
+        #
+        # Several tables in the FROM is not on its own that decision. A column
+        # written *with* a qualifier is unambiguous however many tables are in
+        # scope, so when one of those declines the reason is that nothing was
+        # found underneath it -- which is what `no_source` means. Reading the
+        # table count alone reported the parenthesised-CTAS gap above as
+        # `ambiguous`, pointing at ADR-007's deliberate refusal instead of at a
+        # bug: the coverage report named the one reason nobody would investigate.
+        ambiguous = _has_multiple_sources(select) and not _is_qualified(select, column)
+        reasons.append("ambiguous" if ambiguous else "no_source")
 
     return {
         "outputs": len(outputs),
@@ -497,6 +528,23 @@ def coverage_from_db(conn: psycopg.Connection) -> dict[str, Any]:
     ).fetchall()
     report["edges_by_source"] = {row["source"]: row["n"] for row in sources}
     return report
+
+
+def _traceable(select: Any, statement: Any, query: str) -> str:
+    """The SQL to hand SQLGlot's lineage walk: the SELECT, not its DDL wrapper.
+
+    Returned as text rather than as an expression because `sqlglot.lineage` takes
+    a query and re-parses it; handing it the node would mean reaching into that
+    function's internals for no gain.
+
+    A statement that already *is* the SELECT gets its original text back rather
+    than a re-rendered copy. Round-tripping through the generator is not free —
+    it normalises quoting and expands shorthand — and there is no reason to spend
+    that risk on the path that already worked.
+    """
+    if select is statement:
+        return query
+    return select.sql(dialect=DEFAULT_DIALECT)
 
 
 def _is_qualified(select: Any, column: str) -> bool:

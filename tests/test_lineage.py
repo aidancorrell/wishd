@@ -408,3 +408,69 @@ def test_grouping_summarises_by_namespace(conn):
 
 def _entity(conn, name: str) -> int:
     return identity.find(conn, name)[0]["id"]
+
+
+def test_a_parenthesised_ctas_still_yields_column_edges(conn):
+    """dbt's Postgres materialisation writes `create table t as (select …)`, and the
+    parentheses used to empty column lineage for the whole statement.
+
+    Verbatim in shape from the `fct_orders` capture, which lost all four of its
+    edges to this. The unparenthesised CTAS above kept passing throughout, which is
+    why it went unnoticed: the parentheses are the trigger and nothing else is.
+    """
+    _model(conn, "stg_orders")
+    _model(conn, "stg_customers")
+    _model(
+        conn, "fct_orders",
+        inputs=["stg_orders", "stg_customers"],
+        integration="DBT",
+        sql=(
+            '/* {"app": "dbt", "node_id": "model.analytics.fct_orders"} */ '
+            'create table "dataspine"."analytics_marts"."fct_orders" as ('
+            "select o.order_id, o.customer_id, c.segment, o.order_total "
+            'from "dataspine"."analytics_marts"."stg_orders" o '
+            'join "dataspine"."analytics_marts"."stg_customers" c '
+            "on c.customer_id = o.customer_id)"
+        ),
+    )
+    _resolve(conn)
+
+    columns = {
+        c["downstream_column"]: c
+        for c in lineage.column_edges(conn, downstream="fct_orders")
+    }
+    assert set(columns) == {"order_id", "customer_id", "segment", "order_total"}
+    assert columns["segment"]["upstream_name"] == "stg_customers"
+    assert columns["order_total"]["upstream_name"] == "stg_orders"
+    assert columns["order_id"]["source"] == "sql"
+
+
+def test_coverage_reports_a_parenthesised_ctas_as_resolved(conn):
+    """The same statement, through the report an operator reads to decide whether
+    the gap is a dialect problem, a catalog problem or ours."""
+    sql = (
+        'create table "d"."s"."fct_orders" as ('
+        "select o.order_id, c.segment "
+        'from "d"."s"."stg_orders" o join "d"."s"."stg_customers" c '
+        "on c.customer_id = o.customer_id)"
+    )
+    assert lineage.coverage_of(sql) == {
+        "outputs": 2, "resolved": 2, "declined": 0, "declined_reason": None,
+    }
+
+
+def test_a_qualified_column_that_resolves_to_nothing_is_not_called_ambiguous(conn):
+    """`ambiguous` means we declined on purpose (ADR-007). Reporting it for a
+    qualified column points an operator at a deliberate refusal instead of at a
+    gap, which is the one reason nobody investigates."""
+    # Two tables in scope, but the column is qualified -- so whatever went wrong,
+    # it was not the ambiguity ADR-007 declines on.
+    sql = "select o.missing_col from stg_orders o join stg_customers c on c.k = o.k"
+    report = lineage.coverage_of(sql)
+    assert report["declined_reason"] in (None, "no_source")
+
+
+def test_an_unqualified_ambiguous_column_is_still_reported_as_ambiguous(conn):
+    """The distinction only helps if the real case still lands on the real name."""
+    sql = "select id from a join b on a.k = b.k"
+    assert lineage.coverage_of(sql)["declined_reason"] == "ambiguous"
