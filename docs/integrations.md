@@ -428,6 +428,7 @@ not, and they are labelled rather than quietly shipped:
 |---|---|
 | **Proven** | Airflow 3.0.2, dbt-core (postgres, spark-over-thrift *and* Iceberg), Spark 3.5.7, Iceberg REST catalog 1.9.1, Iceberg and Delta metadata, column lineage from the Spark facet, AWS CUR 2.0 and legacy column shapes |
 | **Written, never run against a real account** | EMR clusters, AWS Glue catalog, Snowflake / Databricks / BigQuery / Redshift pollers, Databricks and Dataproc billing |
+| **Measured against captures, never against a live deployment** | TypeSafe judgments — CUR column discovery, failure-cause labels, schema renames (see below) |
 
 Every real producer so far has falsified something we believed, so treat the second row as
 likely wrong until a capture says otherwise. `ROADMAP.md` tracks each one.
@@ -452,6 +453,59 @@ wishd lineage-coverage
 
 It reports coverage *and why the rest declined* — a `star` gap is a catalog problem,
 `unparseable` is a dialect problem, and they have different fixes.
+
+## Optional judgments (TypeSafe)
+
+Three places in wishd were maintaining a lookup table of somebody else's vocabulary: the
+column spellings AWS ships in a CUR, the type names each engine uses, and the shape of each
+adapter's error text. Each is incomplete the day a vendor adds a spelling, and wrong in a way
+nobody notices. Setting `WISHD_TYPESAFE_API_KEY` lets wishd put those questions to a
+[TypeSafe](https://docs.typesafe.ai) System One model instead:
+
+| | |
+|---|---|
+| **CUR column discovery** | Finds the id, service, resource, period and cost columns in an export whose headers wishd does not already list — including a CUR 2.0 export whose own SQL aliased them. Closes the failure where a default export attributes every row to no cluster while the totals still reconcile. |
+| **Failure cause** | Labels a run failure `permission`, `missing_object`, `schema_mismatch`, `resource_exhaustion`, `transient_infra`, `assertion` or `syntax`, from the adapter's error text. Routable: a `cause:` key in a Slack routes file separates "the data is wrong" from "the machinery stopped", which `integration:` could never really do. |
+| **Schema renames** | Says `customer_id appears to be renamed to cust_id` instead of reporting a removal and an unrelated addition. |
+
+Three properties make this safe to leave on:
+
+- **Off unless configured.** No key means every judgment returns nothing and each caller keeps
+  the behaviour it had before. This is an upgrade to code that already works, not a dependency.
+- **Never gates detection or delivery.** Every call is wrapped and swallowed, for the same
+  reason every alert path is: a 500 from an external service must not cost you a monitoring
+  sweep. A judgment below its confidence floor is dropped rather than guessed at.
+- **Chooses, never invents.** Every question's options are supplied by wishd — the file's own
+  headers, the columns actually added — so an answer is always something that exists, and
+  every question carries an explicit "none of these".
+
+It never decides whether something breaches. A removal breaches whether or not the rename can
+be named; a failure alerts whether or not the cause can be labelled.
+
+**Validation status.** Measured against the captures in `tests/fixtures/`:
+
+- **CUR column discovery.** With the six fields renamed to spellings wishd does not list — the
+  case this exists for — the top choice was correct six times out of six against 87 real
+  headers with every near miss still present, but `service` (0.80) and `cost` (0.76) fell below
+  the 0.9 floor, so **four of six are actually used** and the other two fall back to the null
+  they would have had anyway. Removing the correct column makes it answer "none of these"
+  rather than reaching for `BlendedCost`. The floor is deliberately strict here: a misread bill
+  is invisible, because every row still imports and the totals still reconcile against the AWS
+  console — only the attribution goes wrong.
+- **Schema renames.** Eight of eight, including the near-miss traps (`customer_id` removed and
+  `customer_segment` added is not a rename, and is closer by every string metric than the
+  rename that is).
+- **Failure causes.** Thirteen of fourteen, with the fourteenth falling below its floor and
+  being dropped rather than shown wrong. Those fourteen error strings were **written to the
+  shape each engine emits rather than taken from a capture** — `tests/fixtures/` holds dbt
+  assertion failures and no adapter errors.
+
+Nothing here has been run against a live deployment.
+
+Two things were measured and **deliberately not shipped**: reconciling engine type names
+(`double` vs `decimal(4,2)`) scored too low to be trusted near a schema alert, and resolving
+an ambiguous unqualified column in SQL declined about as often as the parser already does.
+Both are fixed in code instead — see below and [ADR-007](architecture.md).
 
 ## How it works
 

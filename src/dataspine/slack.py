@@ -84,9 +84,17 @@ WEBHOOK_DESTINATION = "webhook"
 
 # What a route may match on. `event` and `status` are the notification's own
 # vocabulary; `monitor` and `job` are the name of the thing it is about, which is
-# what a per-team split is really keyed on; `integration` is what kind of thing
-# broke, which is what separates "the data is wrong" from "the machinery stopped".
-MATCH_KEYS = ("event", "status", "monitor", "job", "dataset", "integration")
+# what a per-team split is really keyed on; `integration` is which tool reported
+# the failure; `cause` is what actually went wrong, which is the one that
+# separates "the data is wrong" from "the machinery stopped".
+#
+# `integration` was carrying that separation before and could not really bear it:
+# a dbt model failing on a missing grant and the same model failing its own
+# freshness test are both `DBT`, and they belong to different people. A route
+# matching `cause` only ever fires when something judged the failure, so a route
+# file that uses it must still have a catch-all under it -- which is the
+# first-match-wins reading the rest of this module already assumes.
+MATCH_KEYS = ("event", "status", "monitor", "job", "dataset", "integration", "cause")
 
 # Route keys are singular because that is how they read in YAML
 # (`integration: DBT`); the attribute behind one may hold several values.

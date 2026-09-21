@@ -122,6 +122,16 @@ class Notification:
     # dbt-on-Spark stack: the model failed and so did the Spark job under it, and
     # routing on only the deepest would file a dbt failure as a Spark one.
     integrations: tuple[str, ...] = ()
+    # What kind of failure this is, judged from the adapter's own error text --
+    # `permission`, `resource_exhaustion`, `assertion`, and so on. None whenever
+    # nothing judged it, which is the default: it needs a TypeSafe key, and a
+    # judgment below its confidence floor is dropped rather than guessed at.
+    #
+    # Routable for the same reason `integration` is. "The data is wrong" and "the
+    # warehouse ran out of memory" are different teams' problems, and until now
+    # the only thing separating them in a route file was which tool happened to
+    # report the failure. See `typesafe.FAILURE_CAUSES`.
+    cause: str | None = None
     fields: tuple[tuple[str, str], ...] = ()
     url: str | None = None
     # Where else this can be opened: `(label, url)` pairs for the system that
@@ -304,6 +314,23 @@ def _run_failure_notification(row: dict[str, Any]) -> Notification:
     if failed > 1:
         fields.append(("failed runs", str(failed)))
 
+    from . import typesafe
+
+    # Judged from the error the adapter actually reported, and only shown when
+    # the judgment is confident. An unlabelled alert is what we sent before; a
+    # wrongly-labelled one sends the reader to the wrong first guess.
+    judged = typesafe.classify_failure(
+        error, engine=str(row.get("leaf_integration") or "").lower() or None, node=leaf
+    )
+    if judged:
+        fields.append(("looks like", judged["cause"].replace("_", " ")))
+        retryable = judged.get("retryable")
+        # Only the affirmative half is worth a line. "This may be transient" tells
+        # someone to try again; "this is not transient" is what every alert means
+        # by default and would just be another field to read past.
+        if retryable is not None and retryable >= 0.7:
+            fields.append(("retry", "may succeed unchanged"))
+
     from . import links as links_mod
 
     return Notification(
@@ -314,6 +341,7 @@ def _run_failure_notification(row: dict[str, Any]) -> Notification:
         dedup_key=str(row["root_id"]),
         job=root_job,
         integrations=tuple(row.get("integrations") or ()),
+        cause=judged.get("cause"),
         fields=tuple(fields),
         url=_link(f"/runs/{row['root_id']}"),
         links=_external(
