@@ -49,6 +49,7 @@ parser and correlation behavior for those inputs; they do not establish every li
 | Warehouse pollers | Validate each supported poller against a real warehouse, including freshness semantics and restricted permissions. |
 | Cost attribution | Reconcile actual EMR spend with observed runs; validate Databricks/Dataproc billing separately. |
 | Scale | Measure ingest, query latency and retention under representative sustained workloads before extending capacity claims. |
+| TypeSafe judgments | Optional and off unless `WISHD_TYPESAFE_API_KEY` is set. Measured against `tests/fixtures/` only: CUR column discovery picks the right header 6/6 on unlisted spellings but only 4/6 clear the 0.9 floor; schema renames 8/8; failure causes 13/14 with the miss below its floor. The failure-cause corpus was written to the shape each engine emits rather than captured. Validate against a live deployment, capture real adapter errors, and re-fit each floor on that data. |
 
 See [live validation](docs/validation.md) for acceptance criteria and capture hygiene.
 These integrations can remain explicitly experimental in v1; do not present unvalidated paths

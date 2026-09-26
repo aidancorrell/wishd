@@ -474,6 +474,70 @@ def test_schema_drift_is_silent_on_a_dbt_only_stack(conn):
     assert result["status"] == "insufficient_data"
 
 
+def test_schema_drift_ignores_a_disagreement_between_two_producers(conn):
+    """One table, two producers, nothing changed -- and it used to breach forever.
+
+    Verbatim from the captures: openlineage-spark 1.52.0 reports
+    `stg_orders.order_total` as `double` while dbt-spark over Thrift reports the
+    same column of the same table as `decimal(4,2)`. Both write into one run tree,
+    so the monitor sees them alternate, and comparing across them reported a
+    retype on every single evaluation of a table nobody had touched.
+    """
+    spark = _job(conn, "spark_fct_orders", integration="SPARK")
+    dbt = _job(conn, "dbt_fct_orders", integration="DBT")
+    dataset = _dataset(conn, "file", "/warehouse/fct_orders")
+
+    spark_schema = {"order_id": "integer", "order_total": "double"}
+    dbt_schema = {"order_id": "integer", "order_total": "decimal(4,2)"}
+    for hours, (job, schema) in enumerate(
+        [(spark, spark_schema), (dbt, dbt_schema),
+         (spark, spark_schema), (dbt, dbt_schema)]
+    ):
+        _write_with_schema(conn, job, dataset, schema, at=NOW - timedelta(hours=4 - hours))
+
+    monitor = _monitor(conn, "schema", "schema_drift", "fct_orders", {})
+    result = checks.evaluate(conn, monitor, now=NOW)
+
+    assert result["status"] == "ok", result["message"]
+
+
+def test_schema_drift_still_breaches_when_one_producer_really_changes(conn):
+    """The other half of the same rule: comparing like with like must not become a
+    mute button. The producers still alternate; Spark genuinely drops a column."""
+    spark = _job(conn, "spark_fct_orders", integration="SPARK")
+    dbt = _job(conn, "dbt_fct_orders", integration="DBT")
+    dataset = _dataset(conn, "file", "/warehouse/fct_orders")
+
+    spark_schema = {"order_id": "integer", "order_total": "double"}
+    dbt_schema = {"order_id": "integer", "order_total": "decimal(4,2)"}
+    for hours, (job, schema) in enumerate(
+        [(spark, spark_schema), (dbt, dbt_schema), (spark, spark_schema),
+         (dbt, dbt_schema), (spark, {"order_id": "integer"})]
+    ):
+        _write_with_schema(conn, job, dataset, schema, at=NOW - timedelta(hours=5 - hours))
+
+    monitor = _monitor(conn, "schema", "schema_drift", "fct_orders", {})
+    result = checks.evaluate(conn, monitor, now=NOW)
+
+    assert result["status"] == "breach"
+    assert "removed order_total" in result["message"]
+
+
+def test_schema_drift_names_the_producer_it_compared_against(conn):
+    """A comparison a reader cannot see the basis of is one they cannot check."""
+    job = _job(conn, "fct_orders", integration="SPARK")
+    dataset = _dataset(conn, "file", "/warehouse/fct_orders")
+    _write_with_schema(conn, job, dataset, {"order_id": "integer"}, at=NOW - timedelta(hours=2))
+    _write_with_schema(conn, job, dataset, {"order_id": "integer", "segment": "string"},
+                       at=NOW - timedelta(hours=1))
+
+    monitor = _monitor(conn, "schema", "schema_drift", "fct_orders", {})
+    checks.evaluate(conn, monitor, now=NOW)
+    points = monitors.recent_points(conn, monitor["id"])
+
+    assert {p["context"]["reporter"] for p in points} == {"SPARK"}
+
+
 # ---------------------------------------------------------------- job SLOs
 
 

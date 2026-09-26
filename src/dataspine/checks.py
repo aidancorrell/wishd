@@ -26,6 +26,7 @@ thresholds are the user's opinion rather than ours.
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -35,6 +36,8 @@ import psycopg
 
 from . import timing
 from .ingest import MAX_TREE_DEPTH
+
+log = logging.getLogger("dataspine.checks")
 
 # States a run must be in before its numbers mean anything. A FAILED run's row
 # count is whatever it managed to write before dying, and feeding that to a volume
@@ -216,10 +219,20 @@ def _dataset_writes(
                    -- insufficient_data rather than as a passing check.
                    (array_agg(rd.facets -> 'schema' order by rd.updated_at desc)
                     filter (where rd.facets ? 'schema'))[1]     as schema,
+                   -- Which producer supplied *that* schema. Same ordering and
+                   -- same filter as the line above, so the two always describe
+                   -- one row: `_judge_schema` compares like with like only if
+                   -- this names the integration the columns actually came from.
+                   coalesce(
+                       (array_agg(j.integration order by rd.updated_at desc)
+                        filter (where rd.facets ? 'schema'))[1],
+                       'unknown'
+                   )                                            as reporter,
                    count(*)                                     as reported_by,
                    0                                            as from_poller
             from run_datasets rd
             join runs r     on r.run_id = rd.run_id
+            left join jobs j on j.id = r.job_id
             where rd.dataset_id = any(%(ids)s)
               and rd.direction = 'OUTPUT'
               and r.state = any(%(states)s)
@@ -240,6 +253,11 @@ def _dataset_writes(
                                from jsonb_each_text(s.columns) as e(k, v))
                         ) order by s.recorded_at desc
                     ) filter (where s.columns is not null))[1]  as schema,
+                   -- `dataset_snapshots.source` already exists to answer "why
+                   -- does it say that", and migration 011 says outright that two
+                   -- sources legitimately disagree about one table. Carrying it
+                   -- through is what lets the schema monitor act on that.
+                   s.source                                     as reporter,
                    count(*)                                     as reported_by,
                    1                                            as from_poller
             from dataset_snapshots s
@@ -253,7 +271,7 @@ def _dataset_writes(
         )
         select distinct on (written_at)
                subject as root_run_id, written_at, row_count, size_bytes,
-               schema, reported_by
+               schema, reporter, reported_by
         from combined
         where (%(since)s::timestamptz is null or written_at >= %(since)s)
         order by written_at, from_poller
@@ -336,6 +354,9 @@ def _schema_points(writes: list[dict[str, Any]]) -> list[Point]:
     the actual comparison is over the context, because "12 columns" and "12
     columns, one of which changed type" are the same number and very different
     events.
+
+    `reporter` rides along because a type name means nothing without knowing who
+    said it -- see `_judge_schema`.
     """
     points: list[Point] = []
     for write in writes:
@@ -347,7 +368,7 @@ def _schema_points(writes: list[dict[str, Any]]) -> list[Point]:
                 observed_at=write["written_at"],
                 subject=str(write["root_run_id"]),
                 value=float(len(columns)),
-                context={"columns": columns},
+                context={"columns": columns, "reporter": write.get("reporter") or "unknown"},
             )
         )
     return points
@@ -840,19 +861,46 @@ def _judge_schema(points: list[Point], config: dict[str, Any]) -> Result:
     most common schema change in a healthy dbt project, and a monitor that pages
     on every additive migration is a monitor that gets muted in week two -- taking
     the removals and type changes with it.
+
+    **The comparison is against the last observation from the same producer.**
+    One logical table is observed through several producers and pollers, each
+    reporting types in its own vocabulary, and comparing across them reports a
+    retype on every alternation of a table nobody touched. That is not
+    hypothetical: in `tests/fixtures/`, openlineage-spark 1.52.0 calls
+    `stg_orders.order_total` a `double` and dbt-spark over Thrift calls the same
+    column of the same table `decimal(4,2)`, so a stack running both used to
+    breach on every single evaluation, forever. Normalising type names across
+    engines was the obvious alternative and it is a losing game -- a table per
+    engine, never complete, and wrong the first time an engine adds a spelling.
+    Comparing like with like needs no table and cannot go stale.
+
+    The cost is a real change being noticed one write later when producers
+    alternate, because the first observation from each producer has nothing of
+    its own to compare against. A delayed true alert beats a permanent false one.
     """
     latest = points[-1]
     columns = latest.context.get("columns") or {}
-    if len(points) < 2:
+    reporter = latest.context.get("reporter") or "unknown"
+
+    # The most recent earlier observation from whoever reported this one.
+    previous = next(
+        (
+            point
+            for point in reversed(points[:-1])
+            if (point.context.get("reporter") or "unknown") == reporter
+        ),
+        None,
+    )
+    if previous is None:
         return Result(
             status="ok",
             value=latest.value,
             subject=latest.subject,
-            context={"columns": columns},
+            context={"columns": columns, "reporter": reporter},
             message=f"{len(columns)} columns; no previous schema to compare against yet",
         )
 
-    before = points[-2].context.get("columns") or {}
+    before = previous.context.get("columns") or {}
     removed = sorted(set(before) - set(columns))
     added = sorted(set(columns) - set(before))
     retyped = sorted(
@@ -861,7 +909,10 @@ def _judge_schema(points: list[Point], config: dict[str, Any]) -> Result:
         if before[name] != columns[name]
     )
 
-    context = {"added": added, "removed": removed, "retyped": retyped, "columns": columns}
+    context = {
+        "added": added, "removed": removed, "retyped": retyped,
+        "columns": columns, "reporter": reporter,
+    }
     breaking = removed + retyped
     if breaking and not config.get("allow_removed_columns"):
         parts = []
@@ -1060,6 +1111,73 @@ def _as_run_id(subject: str | None) -> str | None:
 # ---------------------------------------------------------------- the whole path
 
 
+def _annotate_rename(result: Result) -> Result:
+    """Name the rename behind a removal, when there is one.
+
+    Sits here and not in `_judge_schema` because `judge` is a pure function of
+    the points and staying that way is load-bearing: it is what lets a threshold
+    be re-decided against stored history without re-collecting, and a judge that
+    reached the network would make replaying six weeks of history a six-week
+    conversation with an external service.
+
+    **Only the sentence changes.** The status, the value and every list in the
+    context are exactly what `judge` decided; a removal still breaches whether or
+    not we can name where the column went. A wrong rename costs one misleading
+    clause in a message that is already correct about the breach.
+
+    Swallows its own failures for the same reason every alert path does. This
+    runs inside `evaluate`'s try block, where an exception would be caught and
+    turned into `status="error"` -- so an enrichment that raised would replace a
+    correct breach with a failure to evaluate, which is detection lost to
+    decoration.
+    """
+    if result.status != "breach" or not result.context.get("removed"):
+        return result
+    try:
+        return _rename_annotated(result)
+    except Exception as exc:  # noqa: BLE001 - never downgrade a verdict
+        log.warning("rename annotation failed: %s", exc)
+        return result
+
+
+def _rename_annotated(result: Result) -> Result:
+
+    added = {
+        name: (result.context.get("columns") or {}).get(name, "?")
+        for name in result.context.get("added") or []
+    }
+    if not added:
+        return result
+
+    from . import typesafe
+
+    renames: dict[str, str] = {}
+    for removed in result.context["removed"]:
+        # An added column already claimed by one removal is not offered for the
+        # next: two columns dropped in one write are two different columns, and
+        # letting both land on the same new name would describe a table that
+        # cannot exist.
+        unclaimed = {k: v for k, v in added.items() if k not in renames.values()}
+        if not unclaimed:
+            break
+        match = typesafe.rename_of(
+            removed,
+            unclaimed,
+            table=result.subject or "table",
+            columns=result.context.get("columns") or {},
+        )
+        if match:
+            renames[removed] = match
+
+    if not renames:
+        return result
+
+    said = "; ".join(f"{old} appears to be renamed to {new}" for old, new in renames.items())
+    result.context = {**result.context, "renamed": renames}
+    result.message = f"{result.message} — {said}"
+    return result
+
+
 def evaluate(
     conn: psycopg.Connection,
     monitor: dict[str, Any],
@@ -1101,6 +1219,7 @@ def evaluate(
             for row in monitors_mod.recent_points(conn, monitor["id"], limit=history_limit)
         ]
         result = judge(monitor, history, now=now)
+        result = _annotate_rename(result)
     except Exception as exc:  # noqa: BLE001 - one broken monitor must not stop the sweep
         result = Result(status="error", message=f"{type(exc).__name__}: {exc}")
         stored = 0

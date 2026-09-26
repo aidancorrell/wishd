@@ -67,12 +67,138 @@ COLUMNS = {
 
 TAG_PREFIXES = ("resourceTags/user:", "resource_tags_user_")
 
+# What each canonical field means, in the words a reader of the export would use.
+# Written to exclude the near misses rather than to describe the winner: an export
+# carries `BlendedCost`, `NetUnblendedCost`, `publicOnDemandCost` and two
+# effective-cost columns alongside the one we want, and a description that only
+# says "the cost" selects among six equally good answers.
+COLUMN_MEANINGS = {
+    "line_item_id": (
+        "the identifier of the line item itself (the row's own id), not an "
+        "account, invoice, resource, subscription or reservation id"
+    ),
+    "service": (
+        "the short AWS product or service code the charge is for, such as "
+        "AmazonEC2 or ElasticMapReduce"
+    ),
+    "resource": (
+        "the id or ARN of the individual AWS resource the charge is for, such as "
+        "an instance id or a cluster ARN"
+    ),
+    "start": "the timestamp at which this usage period begins",
+    "end": "the timestamp at which this usage period ends",
+    "cost": (
+        "the actual unblended cost charged to this account for this line item, in "
+        "the billing currency; not a rate, not a blended cost, not a net or "
+        "discounted cost, not a public on-demand cost, and not a reservation or "
+        "savings-plan effective cost"
+    ),
+}
 
-def _pick(row: dict[str, Any], key: str) -> Any:
+# A misread bill is not a visible failure -- the totals still reconcile against
+# the AWS console, because every row is still imported. It is only the
+# attribution that goes wrong, and silently. So the bar here is the highest in
+# the codebase, and below it we keep the null we would have had anyway.
+COLUMN_MIN_CONFIDENCE = 0.9
+
+
+def _pick(row: dict[str, Any], key: str, discovered: dict[str, str] | None = None) -> Any:
     for candidate in COLUMNS[key]:
         if candidate in row:
             return row[candidate]
-    return None
+    header = (discovered or {}).get(key)
+    return row.get(header) if header else None
+
+
+def discover_columns(row: dict[str, Any]) -> dict[str, str]:
+    """Find the fields `COLUMNS` does not spell, by asking about the real headers.
+
+    `COLUMNS` holds two spellings per field -- the legacy CUR's and CUR 2.0's --
+    which covers the two exports we have captures of and nothing else. The
+    spellings are not ours to fix: a CUR 2.0 export only emits flat columns if the
+    export's own SQL aliases them, so `resource_tags.user_cluster as cluster_tag`
+    is as legitimate as the alias we happen to list, and produces a file where
+    every field is present and none is recognised. D12 records the resulting
+    silence: a default export attributes every row to no cluster while the totals
+    reconcile perfectly, which is the hardest kind of wrong to notice.
+
+    Rather than grow the table a spelling at a time, ask which of the headers
+    actually present holds each field. **The options are the file's own headers**,
+    so the answer is always a column that exists, and the sample values go along
+    because a timestamp and a dollar amount are far easier to tell apart by their
+    contents than by their names.
+
+    Only fields `_pick` could not already resolve are asked about, so a recognised
+    export costs nothing and this runs once per import rather than once per row.
+
+    Measured twice, and the second measurement is the one that matters:
+
+      * With the spellings `COLUMNS` already lists, all six fields were selected
+        correctly out of 87 real legacy headers at 0.88-1.00 -- but that case
+        never reaches here, because `_pick` resolved it without asking.
+      * With those six headers **renamed** to spellings nothing lists, and every
+        near miss still present (`product/servicecode`, `lineItem/BlendedCost`,
+        `NetUnblendedCost`, `publicOnDemandCost`, two effective-cost columns), the
+        top choice was right six times out of six -- but `service` came back at
+        0.80 and `cost` at 0.76, so **four of the six clear the floor** and the
+        other two fall back to the null they would have had anyway.
+
+    That is the trade taken deliberately. `cost`'s runner-up was "none of these"
+    at 0.21: the model hedging about whether `charged_usd` means the unblended
+    figure, which is a fair thing to be unsure about. Lowering the floor to buy
+    those two back would spend the one guarantee worth having here -- that a
+    number we could not confidently identify is never silently billed to a
+    cluster -- to improve a case that currently returns nothing at all.
+
+    Removing the correct column entirely makes it answer "none of these" at
+    0.87-0.93 rather than reaching for `BlendedCost`.
+
+    Not validated against an export outside those captures.
+    """
+    from . import typesafe
+
+    if not typesafe.configured():
+        return {}
+
+    missing = [
+        key for key in COLUMNS
+        if not any(candidate in row for candidate in COLUMNS[key])
+    ]
+    if not missing:
+        return {}
+
+    headers = list(row)
+    options = {h: f"sample value: {str(row[h])[:60]!r}" for h in headers}
+    state = {
+        "description": (
+            "The header row of a delivered AWS Cost and Usage Report, with the "
+            "values one data row carries in each column."
+        ),
+        "columns": [{"header": h, "sample": str(row[h])[:60]} for h in headers],
+    }
+    questions = {
+        key: typesafe._choice(
+            f"Which column of this Cost and Usage Report holds {COLUMN_MEANINGS[key]}?",
+            options,
+        )
+        for key in missing
+        if key in COLUMN_MEANINGS
+    }
+    if not questions:
+        return {}
+
+    answers = typesafe.ask(state, questions)
+    found: dict[str, str] = {}
+    for key in questions:
+        header, confidence = typesafe._read_choice(
+            answers.get(key), min_confidence=COLUMN_MIN_CONFIDENCE
+        )
+        if header in row:
+            found[key] = header
+            log.info("CUR column %s resolved to %r (confidence %.2f)", key, header, confidence)
+        else:
+            log.warning("CUR column %s not found in this export", key)
+    return found
 
 
 def _tags(row: dict[str, Any]) -> dict[str, str]:
@@ -131,14 +257,22 @@ def import_cur(
     A row matching no cluster is kept with a null cluster, not dropped. Spend we
     cannot attribute is still spend, and totals that disagree with the AWS
     console are worse than useless.
+
+    Columns this file spells in a way `COLUMNS` does not list are resolved once,
+    from the first row, by `discover_columns` -- a no-op unless a TypeSafe key is
+    configured, and a no-op for the two exports `COLUMNS` already covers.
     """
+    if not rows:
+        return 0
+    discovered = discover_columns(rows[0])
+
     written = 0
     for row in rows:
-        line_item_id = _pick(row, "line_item_id")
-        start = _as_datetime(_pick(row, "start"))
-        end = _as_datetime(_pick(row, "end"))
+        line_item_id = _pick(row, "line_item_id", discovered)
+        start = _as_datetime(_pick(row, "start", discovered))
+        end = _as_datetime(_pick(row, "end", discovered))
         try:
-            amount = float(_pick(row, "cost") or 0)
+            amount = float(_pick(row, "cost", discovered) or 0)
         except (TypeError, ValueError):
             # One unparseable line must not lose a month of billing.
             log.warning("skipping CUR row with unreadable cost: %s", line_item_id)
@@ -173,8 +307,8 @@ def import_cur(
                 "line_item_id": str(line_item_id),
                 "tag_key": tag_key,
                 "tag_value": tags.get(tag_key),
-                "service": _pick(row, "service"),
-                "resource": _pick(row, "resource"),
+                "service": _pick(row, "service", discovered),
+                "resource": _pick(row, "resource", discovered),
                 "start": start,
                 "end": end or start,
                 "cost": amount,
