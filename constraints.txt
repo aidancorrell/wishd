@@ -87,7 +87,7 @@ six==1.17.0
     # via python-dateutil
 sqlglot==30.15.0
     # via wishd (pyproject.toml)
-starlette==1.4.1
+starlette==1.6.0
     # via fastapi
 typer==0.27.1
     # via wishd (pyproject.toml)
