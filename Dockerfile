@@ -8,7 +8,7 @@
 # The base is pinned by digest, not just by tag. `python:3.12-slim` is a moving
 # target -- the same Dockerfile builds a different image next week -- which is
 # the same reproducibility problem as an unpinned dependency, one layer down.
-FROM python:3.12-slim@sha256:2c941e860699f878900b0edc2403613c234d4b32eda3cc9fa7036991a2a63c4a AS build
+FROM python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913 AS build
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -24,7 +24,7 @@ COPY constraints.txt ./
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -c constraints.txt ".[aws]"
 
 
-FROM python:3.12-slim@sha256:2c941e860699f878900b0edc2403613c234d4b32eda3cc9fa7036991a2a63c4a
+FROM python:3.15-slim@sha256:94d3426f1def7db4a106a232ac121bfd975393e5dfd40a619b955fae45fe7913
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
